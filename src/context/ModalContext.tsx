@@ -5,45 +5,15 @@ import React, {
   useState,
   ReactNode,
 } from 'react';
+import { ModalKey } from '../types';
 
-export type ModalId =
-  | 'STRUCTURAL_COHERENCE'
-  | 'HOLOGRAPHIC_PROJECTION'
-  | 'CYMATIC_STABILIZATION'
-  | 'UNIFIED_FIELD'
-  | 'UNIFIELD_DIMENSIONS'
-  | 'SYNCHRONIZATION_ARC'
-  | 'MASTER_ALIGNMENT'
-  | 'META_SCIENCE'
-  | 'MATHEMATICAL_TIER'
-  | 'LOGOS_ATTUNEMENT'
-  | 'AXIOMATIC_PRIMACY'
-  | 'AXIONOMICS'
-  | 'ADAPTER_NETWORK'
-  | 'APPRONOMICS'
-  | 'RESONANCE_TENSOR'
-  | 'STRUCTURAL_INTEGRITY'
-  | 'LINGUISTIC_INTEGRITY'
-  | 'REGENERONOMICS'
-  | 'ETYMONOMICS'
-  | 'AUTOMOMICS'
-  | 'GLYPH_CODE'
-  | 'NOMOS_EXPLAINED'
-  | 'MENOMICS_EXPLAINED'
-  | 'MONICS_PLATE'
-  | 'NOMICS_PLATE'
-  | 'MENOMICS_PLATE'
-  | 'GRAPHEMIC_LAW'
-  | 'PRIMORDIAL_CODE'
-  | 'RESONANCE_FIELD';
-
-type ModalState = Record<ModalId, boolean>;
+type ModalState = Record<ModalKey, boolean>;
 
 interface ModalContextValue {
   modals: ModalState;
-  openModal: (id: ModalId) => void;
-  closeModal: (id: ModalId) => void;
-  toggleModal: (id: ModalId) => void;
+  openModal: (id: ModalKey) => void;
+  closeModal: (id: ModalKey) => void;
+  toggleModal: (id: ModalKey) => void;
   closeAll: () => void;
 }
 
@@ -58,8 +28,8 @@ const INITIAL_MODAL_STATE: ModalState = Object.keys({
     AUTOMOMICS: false, GLYPH_CODE: false, NOMOS_EXPLAINED: false, MENOMICS_EXPLAINED: false,
     MONICS_PLATE: false, NOMICS_PLATE: false, MENOMICS_PLATE: false, GRAPHEMIC_LAW: false,
     PRIMORDIAL_CODE: false, RESONANCE_FIELD: false
-} as Record<ModalId, boolean>).reduce((acc, key) => {
-    acc[key as ModalId] = false;
+} as Record<ModalKey, boolean>).reduce((acc, key) => {
+    acc[key as ModalKey] = false;
     return acc;
 }, {} as ModalState);
 
@@ -67,20 +37,27 @@ const INITIAL_MODAL_STATE: ModalState = Object.keys({
 export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [modals, setModals] = useState<ModalState>(INITIAL_MODAL_STATE);
 
-  const openModal = useCallback((id: ModalId) => {
+  const openModal = useCallback((id: ModalKey) => {
     setModals(prev => ({ ...prev, [id]: true }));
   }, []);
 
-  const closeModal = useCallback((id: ModalId) => {
+  const closeModal = useCallback((id: ModalKey) => {
     setModals(prev => ({ ...prev, [id]: false }));
   }, []);
 
-  const toggleModal = useCallback((id: ModalId) => {
+  const toggleModal = useCallback((id: ModalKey) => {
     setModals(prev => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
   const closeAll = useCallback(() => {
-    setModals(INITIAL_MODAL_STATE);
+    // A bit of a hack to ensure modals are closed before opening new ones in a sequence
+    setModals(prev => {
+        const newState = { ...prev };
+        for (const key in newState) {
+            newState[key as ModalKey] = false;
+        }
+        return newState;
+    });
   }, []);
 
   return (

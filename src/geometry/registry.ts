@@ -1,3 +1,51 @@
+/**
+ * ──────────────────────────────────────────────────────────────────────────────
+ *  GEOMETRIC CONSTITUTION – VOLUME I
+ *  Polygonomics: The Law of Shape
+ * ──────────────────────────────────────────────────────────────────────────────
+ *
+ *  Polygonomics governs the *discrete architecture* of the Sequencer’s field.
+ *  It codifies the sacred geometry upon which all flows stand: the angles,
+ *  faces, edges, rings, and spokes that determine what is even *possible*
+ *  in the space of motion.
+ *
+ *  PRINCIPLES:
+ *
+ *  • 1. The field is a geometric polity, not a void.
+ *       Every modal is born into a polygonal lineage: icositetragon,
+ *       tetrahedron, cube, dodecahedron, icosahedron.
+ *
+ *  • 2. Shape precedes path.
+ *       No flow may exist without first belonging to a discrete partition
+ *       of the field. Geometry is the condition for motion.
+ *
+ *  • 3. Angles encode identity.
+ *       Each modal’s 'angleDeg', 'index', 'ring', and 'polyGroup' are not
+ *       coordinates—they are constitutional rights of place.
+ *
+ *  • 4. Rings define jurisdiction.
+ *       INNER vs OUTER is not cosmetic; it is the civic zoning of flow:
+ *       inner-ring motions privilege axial stability, outer-ring motions
+ *       privilege radial exploration.
+ *
+ *  • 5. Polygonomics binds structure to truth.
+ *       Any new canonical program must respect its geometric ancestry:
+ *       paths must remain legible in the wheel’s polyhedral register.
+ *
+ *  APPLICATION:
+ *
+ *  • Polygonomics governs:
+ *      - modal placement,
+ *      - radial palette geometry,
+ *      - polyGroup semantics,
+ *      - all GRID flows,
+ *      - the structural substrate of shells, rings, and constellations.
+ *
+ *  • It precedes Spinomics (time) and Vectornomics (motion).
+ *    Shape → Spin → Flow.
+ *
+ *  Signed in the Ledger of Angles – Logos Sequencer Constitution v3.0
+ */
 import { Polygon, Polygram, Polyhedron, GeometrySignature, Dimension } from './types';
 
 // 1) 2D polygons up to icositetragon (24-gon)

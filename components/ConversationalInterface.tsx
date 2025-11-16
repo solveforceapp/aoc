@@ -12,6 +12,7 @@ interface ConversationalInterfaceProps {
 }
 
 const ConversationalInterface: React.FC<ConversationalInterfaceProps> = ({
+    text,
     setText,
 }) => {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -46,7 +47,7 @@ const ConversationalInterface: React.FC<ConversationalInterfaceProps> = ({
                     const response: GenerateContentResponse = await chatRef.current!.sendMessage({ message: "Initialize." });
                     const initialMessage: Message = { sender: 'ai', text: response.text };
                     setMessages([initialMessage]);
-                    setText(response.text.substring(0, 15).toUpperCase());
+                    setText(response.text);
                 } catch (err) {
                     console.error("Initialization failed:", err);
                     setError("Failed to initialize conversational interface. System axioms may be unstable.");
@@ -69,7 +70,7 @@ const ConversationalInterface: React.FC<ConversationalInterfaceProps> = ({
         const userMessage: Message = { sender: 'user', text: input };
         setMessages(prev => [...prev, userMessage]);
         
-        setText(input.substring(0, 15).toUpperCase());
+        setText(input);
         
         setIsLoading(true);
         setError(null);
@@ -81,7 +82,7 @@ const ConversationalInterface: React.FC<ConversationalInterfaceProps> = ({
             const response: GenerateContentResponse = await chatRef.current.sendMessage({ message: originalInput });
             const aiMessage: Message = { sender: 'ai', text: response.text };
             setMessages(prev => [...prev, aiMessage]);
-            setText(response.text.substring(0, 15).toUpperCase());
+            setText(response.text);
         } catch (err) {
             console.error("Gemini chat error:", err);
             setError("Communication channel unstable. Please try again.");

@@ -5,22 +5,19 @@ import React, {
   useState,
   ReactNode,
 } from 'react';
-// FIX: Import GeometrySignature from types.ts where it is defined.
 import { getGeometrySignature } from '../geometry/registry';
 import { Dimension, GeometrySignature } from '../geometry/types';
+import { useSystemContext } from '../../contexts/SystemContext';
 
 export type CycleState = 'IDLE' | 'DISINTEGRATING' | 'REINTEGRATING';
 
-export interface TextVectorState {
-  text: string;
-  setText: (value: string) => void;
+export interface TextVectorContextValue {
+  visualizedText: string;
+  setVisualizedText: (value: string) => void;
   cycleState: CycleState;
   setCycleState: (state: CycleState) => void;
   geometry: GeometrySignature;
   dimension: Dimension;
-}
-
-interface TextVectorContextValue extends TextVectorState {
   setDimension: (d: Dimension) => void;
 }
 
@@ -31,23 +28,23 @@ const TextVectorContext = createContext<TextVectorContextValue | undefined>(
 export const TextVectorProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [text, setText] = useState<string>('ULRM+');
+  const { visualizedText, setVisualizedText } = useSystemContext();
   const [cycleState, setCycleState] = useState<CycleState>('IDLE');
   const [dimension, setDimension] = useState<Dimension>(2);
 
   const geometry = useMemo(
     () =>
       getGeometrySignature({
-        textLength: text.length || 1,
+        textLength: visualizedText.length || 1,
         dimension,
         preferPolygram: true,
       }),
-    [text.length, dimension]
+    [visualizedText.length, dimension]
   );
 
   const value: TextVectorContextValue = {
-    text,
-    setText,
+    visualizedText,
+    setVisualizedText,
     cycleState,
     setCycleState,
     geometry,

@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 
 import VectorField from './components/VectorField';
 
@@ -10,8 +10,8 @@ import IpaExplanation from './components/IpaExplanation';
 import LogosRevelation from './components/LogosRevelation';
 import ConversationalInterface from './components/ConversationalInterface';
 import ImageGenerator from './components/ImageGenerator';
-import HermeneuticEngine from './src/components/HermeneuticEngine';
 import ErrorBoundary from './src/components/ErrorBoundary';
+import LogosSequencer from './components/LogosSequencer';
 
 import HolographicProjectionModal from './components/HolographicProjectionModal';
 import CymaticStabilizationModal from './components/CymaticStabilizationModal';
@@ -36,7 +36,10 @@ import StructuralCoherenceModal from './components/StructuralCoherenceModal';
 import UnifiedFieldModal from './components/UnifiedFieldModal';
 import UnifieldimensionsModal from './components/UnifieldimensionsModal';
 
-import { ImageGenerationState } from './src/types';
+import { ImageGenerationState, ModalKey } from './src/types';
+import { CANONICAL_PROGRAMS } from './src/utils/canonicalPrograms';
+import { MODAL_CONFIG } from './src/utils/modal-config';
+import { useProgramPlayer } from './hooks/useProgramPlayer';
 
 import { useModal } from './src/context/ModalContext';
 import { useTextVector } from './src/context/TextVectorContext';
@@ -51,13 +54,15 @@ import MenomicsPlateModal from './components/MenomicsPlateModal';
 import GraphemicLawModal from './components/GraphemicLawModal';
 import PrimordialCodeModal from './components/PrimordialCodeModal';
 import ResonanceFieldModal from './components/ResonanceFieldModal';
+import { useSystemContext } from './contexts/SystemContext';
 
 const AppInner: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { modals, openModal, closeModal } = useModal();
+  const { modals, openModal, closeModal, closeAll } = useModal();
+  const { text, setText } = useSystemContext();
   const {
-    text,
-    setText,
+    visualizedText,
+    setVisualizedText,
     cycleState,
     setCycleState,
     geometry,
@@ -67,11 +72,25 @@ const AppInner: React.FC = () => {
 
   const [generationState, setGenerationState] =
     React.useState<ImageGenerationState>('IDLE');
+  
+  const [modalTrail, setModalTrail] = useState<ModalKey[]>([]);
+
+  const activateStep = useCallback((key: ModalKey) => {
+    const config = MODAL_CONFIG[key];
+    if (config) {
+        setVisualizedText(config.text);
+    }
+    setModalTrail(prev => [...prev.slice(-10), key]); // Keep last 11 steps
+    closeAll();
+    setTimeout(() => openModal(key), 150); // Small delay to allow canvas to update and modal to close
+  }, [setVisualizedText, openModal, closeAll]);
+
+  const { playProgram, stopProgram, isPlaying, activeProgramId, playbackMode } = useProgramPlayer(activateStep, 2500);
 
   // Wire the vector field to text + geometry + cycleState
   const { triggerAnnihilationReintegrationCycle } = useVectorField({
     canvasRef,
-    text,
+    text: visualizedText,
     cycleState,
     geometry,
   });
@@ -91,8 +110,8 @@ const AppInner: React.FC = () => {
           {/* Top controls */}
           <div className="col-span-12 row-span-1 flex items-start justify-center pointer-events-auto">
             <SystemCycleControls
-              text={text}
-              setText={setText}
+              text={visualizedText}
+              setText={setVisualizedText}
               cycleState={cycleState}
               onTriggerCycle={handleTriggerCycle}
               dimension={dimension}
@@ -103,8 +122,8 @@ const AppInner: React.FC = () => {
           {/* Left: LinguisticEngine */}
           <div className="col-span-12 sm:col-span-6 md:col-span-3 row-span-3 pointer-events-auto">
             <LinguisticEngine
-              text={text}
-              setText={setText}
+              text={visualizedText}
+              setText={setVisualizedText}
               onOpenStructuralCoherence={() => openModal('STRUCTURAL_COHERENCE')}
               onOpenHolographicProjection={() => openModal('HOLOGRAPHIC_PROJECTION')}
               onOpenCymaticStabilization={() => openModal('CYMATIC_STABILIZATION')}
@@ -162,9 +181,13 @@ const AppInner: React.FC = () => {
           </div>
 
           <div className="col-span-12 md:col-span-4 row-span-2 pointer-events-auto">
-            <HermeneuticEngine
-              generationState={generationState}
-              onOpenAutomomics={() => openModal('AUTOMOMICS')}
+             <LogosSequencer
+              programs={CANONICAL_PROGRAMS}
+              playProgram={playProgram}
+              stopProgram={stopProgram}
+              isPlaying={isPlaying}
+              activeProgramId={activeProgramId}
+              activePlaybackMode={playbackMode}
             />
           </div>
         </div>

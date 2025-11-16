@@ -6,10 +6,10 @@ interface IpaExplanationProps {
 }
 
 const IpaExplanation: React.FC<IpaExplanationProps> = ({ onOpenDeepDive }) => {
-    const { setText } = useTextVector();
+    const { setVisualizedText } = useTextVector();
 
     const handleOpenDeepDive = () => {
-        setText('GLYPHS');
+        setVisualizedText('GLYPHS');
         onOpenDeepDive();
     };
 
