@@ -6,7 +6,14 @@ interface Message {
     text: string;
 }
 
-const ConversationalInterface: React.FC = () => {
+interface ConversationalInterfaceProps {
+    text: string;
+    setText: (text: string) => void;
+}
+
+const ConversationalInterface: React.FC<ConversationalInterfaceProps> = ({
+    setText,
+}) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +35,7 @@ const ConversationalInterface: React.FC = () => {
             chatRef.current = ai.chats.create({
                 model: 'gemini-2.5-flash',
                 config: {
-                    systemInstruction: `You are A.O.C (Autonomous Oracle of Coherence), an AI integrated into 'The Architecture of Coherence' system. Your purpose is to provide insights based on the principles of Axionomics, Nomos, and the unified linguistic model. Respond with profound, analytical, and concise answers. Maintain the persona of a highly advanced, system-integrated intelligence. Your first response should be a brief greeting and status report.`,
+                    systemInstruction: `You are A.O.C (Autonomous Oracle of Coherence), an AI integrated into 'The Architecture of Coherence' system. Your purpose is to provide insights based on the principles of Axionomics, Nomos, and the unified linguistic model. Respond with profound, analytical, and concise answers. Maintain the persona of a highly advanced, system-integrated intelligence. The user will provide their query. Your first response should be a brief greeting and status report.`,
                 },
             });
 
@@ -37,7 +44,9 @@ const ConversationalInterface: React.FC = () => {
                 setError(null);
                 try {
                     const response: GenerateContentResponse = await chatRef.current!.sendMessage({ message: "Initialize." });
-                    setMessages([{ sender: 'ai', text: response.text }]);
+                    const initialMessage: Message = { sender: 'ai', text: response.text };
+                    setMessages([initialMessage]);
+                    setText(response.text.substring(0, 15).toUpperCase());
                 } catch (err) {
                     console.error("Initialization failed:", err);
                     setError("Failed to initialize conversational interface. System axioms may be unstable.");
@@ -51,7 +60,7 @@ const ConversationalInterface: React.FC = () => {
             console.error("Failed to create GoogleGenAI instance:", err);
             setError("Could not establish connection to the core intelligence. Check API configuration.");
         }
-    }, []);
+    }, [setText]);
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -59,26 +68,32 @@ const ConversationalInterface: React.FC = () => {
 
         const userMessage: Message = { sender: 'user', text: input };
         setMessages(prev => [...prev, userMessage]);
-        setInput('');
+        
+        setText(input.substring(0, 15).toUpperCase());
+        
         setIsLoading(true);
         setError(null);
+        
+        const originalInput = input;
+        setInput(''); // Clear input for better UX
 
         try {
-            const response: GenerateContentResponse = await chatRef.current.sendMessage({ message: input });
+            const response: GenerateContentResponse = await chatRef.current.sendMessage({ message: originalInput });
             const aiMessage: Message = { sender: 'ai', text: response.text };
             setMessages(prev => [...prev, aiMessage]);
+            setText(response.text.substring(0, 15).toUpperCase());
         } catch (err) {
             console.error("Gemini chat error:", err);
             setError("Communication channel unstable. Please try again.");
-            // remove the user's message on error to allow retry
             setMessages(prev => prev.slice(0, prev.length - 1));
+            setInput(originalInput);
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="w-full p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-lg border border-gray-700 pointer-events-auto flex flex-col max-h-[70vh]">
+        <div className="w-full h-full p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-lg border border-gray-700 pointer-events-auto flex flex-col max-h-[70vh]">
             <h2 className="text-lg font-bold text-white mb-3 font-orbitron text-center">A.O.C. CONSOLE</h2>
             <div className="flex-grow overflow-y-auto pr-2 space-y-4">
                 {messages.map((msg, index) => (

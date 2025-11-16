@@ -1,161 +1,124 @@
-// FIX: Import React to provide the React namespace for types like React.RefObject.
-import React, { useRef, useEffect } from 'react';
+import { RefObject, useEffect, useRef } from 'react';
+import { CycleState } from '../src/context/TextVectorContext';
+import { GeometrySignature } from '../src/geometry/types';
 
-interface Particle {
-    x: number;
-    y: number;
-    originX: number;
-    originY: number;
-    color: string;
-    vx: number;
-    vy: number;
-    size: number;
+interface UseVectorFieldParams {
+  canvasRef: RefObject<HTMLCanvasElement>;
+  text: string;
+  cycleState: CycleState;
+  geometry: GeometrySignature;
 }
 
-interface VectorFieldApi {
-    getParticlesData: () => { x: number; y: number; color: string; }[];
-}
+export function useVectorField({
+  canvasRef,
+  text,
+  cycleState,
+  geometry,
+}: UseVectorFieldParams) {
+  const animationRef = useRef<number | null>(null);
 
-const useVectorField = (
-    canvasRef: React.RefObject<HTMLCanvasElement>,
-    text: string
-): VectorFieldApi | null => {
-    const particlesRef = useRef<Particle[]>([]);
-    // FIX: Initialize useRef with null and update type to handle null value. The original code `useRef<number>()` is invalid as it lacks an initial value, causing the "Expected 1 arguments, but got 0" error.
-    const animationFrameId = useRef<number | null>(null);
-    const mouseRef = useRef<{ x: number | null; y: number | null; radius: number }>({
-        x: null,
-        y: null,
-        radius: 100,
-    });
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        const ctx = canvas?.getContext('2d', { willReadFrequently: true });
-        if (!canvas || !ctx) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-        let width = canvas.offsetWidth;
-        let height = canvas.offsetHeight;
-        canvas.width = width;
-        canvas.height = height;
+    let frame = 0;
 
-        const handleMouseMove = (event: MouseEvent) => {
-            const rect = canvas.getBoundingClientRect();
-            mouseRef.current.x = event.clientX - rect.left;
-            mouseRef.current.y = event.clientY - rect.top;
-        };
+    const draw = () => {
+      frame++;
 
-        const handleMouseLeave = () => {
-            mouseRef.current.x = null;
-            mouseRef.current.y = null;
-        };
-        
-        canvas.addEventListener('mousemove', handleMouseMove);
-        canvas.addEventListener('mouseleave', handleMouseLeave);
-        
-        const createParticles = () => {
-            ctx.clearRect(0, 0, width, height);
-            const fontSize = Math.min(width / 8, 120);
-            ctx.fillStyle = 'white';
-            ctx.font = `900 ${fontSize}px Orbitron`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(text, width / 2, height / 2);
-            
-            const imageData = ctx.getImageData(0, 0, width, height);
-            const newParticles: Particle[] = [];
-            const gap = 5;
+      const width = canvas.width;
+      const height = canvas.height;
 
-            for (let y = 0; y < height; y += gap) {
-                for (let x = 0; x < width; x += gap) {
-                    const alpha = imageData.data[(y * width + x) * 4 + 3];
-                    if (alpha > 128) {
-                        newParticles.push({
-                            x: Math.random() * width,
-                            y: Math.random() * height,
-                            originX: x,
-                            originY: y,
-                            color: `hsl(${Math.random() * 360}, 100%, 70%)`,
-                            vx: 0,
-                            vy: 0,
-                            size: 2
-                        });
-                    }
-                }
-            }
-            particlesRef.current = newParticles;
-        };
+      // Clear
+      ctx.clearRect(0, 0, width, height);
 
-        createParticles();
+      // Background glow based on dimension
+      const baseRadius = Math.min(width, height) * 0.3;
 
-        const animate = () => {
-            ctx.clearRect(0, 0, width, height);
-            const particles = particlesRef.current;
-            const mouse = mouseRef.current;
+      // Simple harmonics from text
+      const charSum = text
+        .split('')
+        .reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
 
-            particles.forEach(p => {
-                // Force towards origin
-                const dxOrigin = p.originX - p.x;
-                const dyOrigin = p.originY - p.y;
-                p.vx += dxOrigin * 0.01;
-                p.vy += dyOrigin * 0.01;
+      const wobble = Math.sin(frame * 0.01 + charSum * 0.001) * 0.05;
 
-                // Mouse repulsion
-                if (mouse.x !== null && mouse.y !== null) {
-                    const dxMouse = p.x - mouse.x;
-                    const dyMouse = p.y - mouse.y;
-                    const distance = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
-                    if (distance < mouse.radius) {
-                        const force = (mouse.radius - distance) / mouse.radius;
-                        p.vx += (dxMouse / distance) * force * 2;
-                        p.vy += (dyMouse / distance) * force * 2;
-                    }
-                }
-                
-                // Friction
-                p.vx *= 0.95;
-                p.vy *= 0.95;
-                
-                p.x += p.vx;
-                p.y += p.vy;
-                
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fillStyle = p.color;
-                ctx.fill();
-            });
+      ctx.save();
+      ctx.translate(width / 2, height / 2);
 
-            animationFrameId.current = requestAnimationFrame(animate);
-        };
+      // Draw polygon / polygram / polyhedron projection
+      if (geometry.polygon) {
+        const sides = geometry.polygon.sides;
+        const angleStep = (Math.PI * 2) / sides;
 
-        animate();
-        
-        const handleResize = () => {
-            width = canvas.offsetWidth;
-            height = canvas.offsetHeight;
-            canvas.width = width;
-            canvas.height = height;
-            createParticles();
-        };
+        ctx.beginPath();
+        for (let i = 0; i < sides; i++) {
+          const angle = i * angleStep + wobble;
+          const r = baseRadius * (1 + 0.1 * Math.sin(frame * 0.03 + i));
+          const x = r * Math.cos(angle);
+          const y = r * Math.sin(angle);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
 
-        window.addEventListener('resize', handleResize);
+        // Stroke intensity changes with cycle state
+        const alpha =
+          cycleState === 'IDLE'
+            ? 0.6
+            : cycleState === 'DISINTEGRATING'
+            ? 0.3
+            : 0.9;
 
-        return () => {
-            // FIX: Check against null to avoid a bug where an animation frame ID of 0 is treated as falsy and `cancelAnimationFrame` is not called.
-            if (animationFrameId.current !== null) {
-                cancelAnimationFrame(animationFrameId.current);
-            }
-            window.removeEventListener('resize', handleResize);
-            canvas.removeEventListener('mousemove', handleMouseMove);
-            canvas.removeEventListener('mouseleave', handleMouseLeave);
-        };
-    }, [text, canvasRef]);
-    
-    const getParticlesData = () => {
-        return particlesRef.current.map(p => ({ x: p.x, y: p.y, color: p.color }));
+        ctx.strokeStyle = `rgba(0, 255, 200, ${alpha})`;
+        ctx.lineWidth = cycleState === 'REINTEGRATING' ? 3 : 1.5;
+        ctx.stroke();
+      }
+
+      // Optionally overlay polygram connections
+      if (geometry.polygram) {
+        const { sides, step } = geometry.polygram;
+        const angleStep = (Math.PI * 2) / sides;
+
+        ctx.beginPath();
+        for (let i = 0; i <= sides; i++) {
+          const idx = (i * step) % sides;
+          const angle = idx * angleStep - wobble;
+          const r = baseRadius * 1.1;
+          const x = r * Math.cos(angle);
+          const y = r * Math.sin(angle);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = 'rgba(0, 180, 255, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      ctx.restore();
+
+      animationRef.current = requestAnimationFrame(draw);
     };
 
-    return { getParticlesData };
-};
+    animationRef.current = requestAnimationFrame(draw);
 
-export default useVectorField;
+    return () => {
+      if (animationRef.current != null) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [canvasRef, text, cycleState, geometry]);
+
+  // Optional: a helper to “kick” a cycle externally
+  const triggerAnnihilationReintegrationCycle = (
+    setCycleState: (s: CycleState) => void
+  ) => {
+    setCycleState('DISINTEGRATING');
+    setTimeout(() => setCycleState('REINTEGRATING'), 900);
+    setTimeout(() => setCycleState('IDLE'), 2000);
+  };
+
+  return { triggerAnnihilationReintegrationCycle };
+}

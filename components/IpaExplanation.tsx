@@ -1,10 +1,18 @@
 import React from 'react';
+import { useTextVector } from '../src/context/TextVectorContext';
 
 interface IpaExplanationProps {
     onOpenDeepDive: () => void;
 }
 
 const IpaExplanation: React.FC<IpaExplanationProps> = ({ onOpenDeepDive }) => {
+    const { setText } = useTextVector();
+
+    const handleOpenDeepDive = () => {
+        setText('GLYPHS');
+        onOpenDeepDive();
+    };
+
     return (
         <div className="w-full h-full p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-lg border border-gray-700 pointer-events-auto flex flex-col justify-between">
             <div>
@@ -18,7 +26,7 @@ const IpaExplanation: React.FC<IpaExplanationProps> = ({ onOpenDeepDive }) => {
             </div>
             <div className="mt-4 text-center">
                 <button
-                    onClick={onOpenDeepDive}
+                    onClick={handleOpenDeepDive}
                     className="w-full px-4 py-2 text-xs font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-green-600 hover:bg-green-700/50 hover:border-green-400 hover:text-white text-green-300 shadow-[0_0_10px_rgba(0,255,0,0.3)] hover:shadow-[0_0_20px_rgba(0,255,0,0.6)]"
                 >
                     [DEEP DIVE: GLYPHS]

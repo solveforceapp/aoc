@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { GoogleGenAI } from '@google/genai';
+import { ImageGenerationState } from '../src/types';
 
-const ImageGenerator: React.FC = () => {
+interface ImageGeneratorProps {
+    setGenerationState: (state: ImageGenerationState) => void;
+}
+
+const ImageGenerator: React.FC<ImageGeneratorProps> = ({ setGenerationState }) => {
     const [prompt, setPrompt] = useState<string>('A glowing neural network representing the architecture of language, futuristic, dark background, cyan and magenta highlights');
     const [generatedImage, setGeneratedImage] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -15,6 +20,7 @@ const ImageGenerator: React.FC = () => {
         setIsLoading(true);
         setError(null);
         setGeneratedImage(null);
+        setGenerationState('LOADING');
 
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -32,19 +38,21 @@ const ImageGenerator: React.FC = () => {
                 const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
                 const imageUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
                 setGeneratedImage(imageUrl);
+                setGenerationState('SUCCESS');
             } else {
                 throw new Error("No image was generated.");
             }
         } catch (err) {
             console.error("Image generation failed:", err);
             setError("Image generation failed. The creative substrate may be unstable. Please try again.");
+            setGenerationState('ERROR');
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="w-full p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-lg border border-gray-700 pointer-events-auto">
+        <div className="w-full h-full p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-lg border border-gray-700 pointer-events-auto flex flex-col">
             <h2 className="text-lg font-bold text-white mb-3 font-orbitron text-center">SEMANTIC IMAGE SYNTHESIZER</h2>
             <div className="flex flex-col md:flex-row gap-2">
                 <input
@@ -63,7 +71,7 @@ const ImageGenerator: React.FC = () => {
                     {isLoading ? '[SYNTHESIZING...]' : '[GENERATE]'}
                 </button>
             </div>
-            <div className="mt-4 w-full aspect-video bg-black/50 rounded-md border border-gray-800 flex items-center justify-center">
+            <div className="mt-4 w-full flex-grow bg-black/50 rounded-md border border-gray-800 flex items-center justify-center min-h-0">
                 {isLoading && (
                     <div className="text-center text-fuchsia-300">
                         <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-fuchsia-400 mx-auto"></div>
