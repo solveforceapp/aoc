@@ -1,5 +1,6 @@
 import React from 'react';
 import Modal from './common/Modal';
+import GeometryInspector from './GeometryInspector';
 
 interface MathematicalTierModalProps {
     isOpen: boolean;
@@ -30,6 +31,10 @@ const MathematicalTierModal: React.FC<MathematicalTierModalProps> = ({ isOpen, o
                         </li>
                     </ul>
                 </div>
+
+                <hr className="my-6 border-fuchsia-500/30" />
+                <GeometryInspector />
+
                 <h3 className="font-bold text-fuchsia-300 font-orbitron text-lg pt-2">The Goal: A Unified Grammar</h3>
                 <p>
                     The ultimate aim of exploring the Mathematical Tier is to formulate a <strong className="text-fuchsia-200">Grand Unified Grammar (GUG)</strong>—a single set of mathematical equations that can describe the behavior of any coherent language system, from human speech to computer code to the laws of physics. This tier provides the rigorous, formal language needed to validate the principles discovered in the higher, more intuitive layers of the Meta-Science.
