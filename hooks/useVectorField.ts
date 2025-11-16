@@ -21,7 +21,8 @@ const useVectorField = (
     text: string
 ): VectorFieldApi | null => {
     const particlesRef = useRef<Particle[]>([]);
-    const animationFrameId = useRef<number>();
+    // FIX: Initialize useRef with null and update type to handle null value. The original code `useRef<number>()` is invalid as it lacks an initial value, causing the "Expected 1 arguments, but got 0" error.
+    const animationFrameId = useRef<number | null>(null);
     const mouseRef = useRef<{ x: number | null; y: number | null; radius: number }>({
         x: null,
         y: null,
@@ -140,7 +141,8 @@ const useVectorField = (
         window.addEventListener('resize', handleResize);
 
         return () => {
-            if (animationFrameId.current) {
+            // FIX: Check against null to avoid a bug where an animation frame ID of 0 is treated as falsy and `cancelAnimationFrame` is not called.
+            if (animationFrameId.current !== null) {
                 cancelAnimationFrame(animationFrameId.current);
             }
             window.removeEventListener('resize', handleResize);

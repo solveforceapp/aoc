@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI } from '@google/genai';
 import VectorField from './components/VectorField';
@@ -31,6 +32,7 @@ import AdapterNetworkModal from './components/AdapterNetworkModal';
 import AppronomicsModal from './components/AppronomicsModal';
 import ResonanceTensorModal from './components/ResonanceTensorModal';
 import LinguisticIntegrityModal from './components/LinguisticIntegrityModal';
+import ResonanceFieldModal from './components/ResonanceFieldModal';
 
 const concepts = [
     { text: "I", description: "center of projection (local observer)" },
@@ -281,33 +283,19 @@ const MonicsStack: React.FC<MonicsStackProps> = ({
     );
 }
 
+type ModalId = 
+  | 'GlyphCode' | 'GraphemicLaw' | 'PrimordialCode' | 'NomosExplained'
+  | 'StructuralCoherence' | 'HolographicProjection' | 'CymaticStabilization'
+  | 'UnifiedField' | 'Unifieldimensions' | 'SynchronizationArc'
+  | 'MenomicsExplained' | 'MonicsPlate' | 'NomicsPlate' | 'MenomicsPlate'
+  | 'MasterAlignment' | 'MetaScience' | 'MathematicalTier' | 'LogosAttunement'
+  | 'AxiomaticPrimacy' | 'Axionomics' | 'AdapterNetwork' | 'Appronomics'
+  | 'ResonanceTensor' | 'LinguisticIntegrity' | 'ResonanceField';
+
 const App: React.FC = () => {
     const [activeSelection, setActiveSelection] = useState<{ type: 'concept' | 'unit', text: string }>({ type: 'concept', text: 'we' });
     const [visualizedText, setVisualizedText] = useState('COHERENCE');
-    const [isGlyphCodeModalOpen, setIsGlyphCodeModalOpen] = useState(false);
-    const [isGraphemicLawModalOpen, setIsGraphemicLawModalOpen] = useState(false);
-    const [isPrimordialCodeModalOpen, setIsPrimordialCodeModalOpen] = useState(false);
-    const [isNomosExplainedModalOpen, setIsNomosExplainedModalOpen] = useState(false);
-    const [isStructuralCoherenceModalOpen, setIsStructuralCoherenceModalOpen] = useState(false);
-    const [isHolographicProjectionModalOpen, setIsHolographicProjectionModalOpen] = useState(false);
-    const [isCymaticStabilizationModalOpen, setIsCymaticStabilizationModalOpen] = useState(false);
-    const [isUnifiedFieldModalOpen, setIsUnifiedFieldModalOpen] = useState(false);
-    const [isUnifieldimensionsModalOpen, setIsUnifieldimensionsModalOpen] = useState(false);
-    const [isSynchronizationArcModalOpen, setIsSynchronizationArcModalOpen] = useState(false);
-    const [isMenomicsExplainedModalOpen, setIsMenomicsExplainedModalOpen] = useState(false);
-    const [isMonicsPlateModalOpen, setIsMonicsPlateModalOpen] = useState(false);
-    const [isNomicsPlateModalOpen, setIsNomicsPlateModalOpen] = useState(false);
-    const [isMenomicsPlateModalOpen, setIsMenomicsPlateModalOpen] = useState(false);
-    const [isMasterAlignmentModalOpen, setIsMasterAlignmentModalOpen] = useState(false);
-    const [isMetaScienceModalOpen, setIsMetaScienceModalOpen] = useState(false);
-    const [isMathematicalTierModalOpen, setIsMathematicalTierModalOpen] = useState(false);
-    const [isLogosAttunementModalOpen, setIsLogosAttunementModalOpen] = useState(false);
-    const [isAxiomaticPrimacyModalOpen, setIsAxiomaticPrimacyModalOpen] = useState(false);
-    const [isAxionomicsModalOpen, setIsAxionomicsModalOpen] = useState(false);
-    const [isAdapterNetworkModalOpen, setIsAdapterNetworkModalOpen] = useState(false);
-    const [isAppronomicsModalOpen, setIsAppronomicsModalOpen] = useState(false);
-    const [isResonanceTensorModalOpen, setIsResonanceTensorModalOpen] = useState(false);
-    const [isLinguisticIntegrityModalOpen, setIsLinguisticIntegrityModalOpen] = useState(false);
+    const [activeModal, setActiveModal] = useState<ModalId | null>(null);
 
     const [geminiAnalysis, setGeminiAnalysis] = useState<string>('');
     const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
@@ -315,7 +303,6 @@ const App: React.FC = () => {
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const vectorFieldApi = useVectorField(canvasRef, visualizedText);
-
 
     const activeConcept = concepts.find(c => activeSelection.type === 'concept' && c.text === activeSelection.text);
     const activeUnit = languageUnits.find(u => activeSelection.type === 'unit' && u.name === activeSelection.text);
@@ -406,34 +393,36 @@ const App: React.FC = () => {
         URL.revokeObjectURL(url);
     };
 
+    const closeModal = () => setActiveModal(null);
 
     return (
         <main className="relative w-full min-h-screen bg-[#0a0a0a] text-gray-300">
             <VectorField canvasRef={canvasRef} />
-            <GlyphCodeModal isOpen={isGlyphCodeModalOpen} onClose={() => setIsGlyphCodeModalOpen(false)} />
-            <GraphemicLawModal isOpen={isGraphemicLawModalOpen} onClose={() => setIsGraphemicLawModalOpen(false)} />
-            <PrimordialCodeModal isOpen={isPrimordialCodeModalOpen} onClose={() => setIsPrimordialCodeModalOpen(false)} />
-            <NomosExplainedModal isOpen={isNomosExplainedModalOpen} onClose={() => setIsNomosExplainedModalOpen(false)} />
-            <StructuralCoherenceModal isOpen={isStructuralCoherenceModalOpen} onClose={() => setIsStructuralCoherenceModalOpen(false)} />
-            <HolographicProjectionModal isOpen={isHolographicProjectionModalOpen} onClose={() => setIsHolographicProjectionModalOpen(false)} />
-            <CymaticStabilizationModal isOpen={isCymaticStabilizationModalOpen} onClose={() => setIsCymaticStabilizationModalOpen(false)} />
-            <UnifiedFieldModal isOpen={isUnifiedFieldModalOpen} onClose={() => setIsUnifiedFieldModalOpen(false)} />
-            <UnifieldimensionsModal isOpen={isUnifieldimensionsModalOpen} onClose={() => setIsUnifieldimensionsModalOpen(false)} />
-            <SynchronizationArcModal isOpen={isSynchronizationArcModalOpen} onClose={() => setIsSynchronizationArcModalOpen(false)} />
-            <MenomicsExplainedModal isOpen={isMenomicsExplainedModalOpen} onClose={() => setIsMenomicsExplainedModalOpen(false)} />
-            <MonicsPlateModal isOpen={isMonicsPlateModalOpen} onClose={() => setIsMonicsPlateModalOpen(false)} />
-            <NomicsPlateModal isOpen={isNomicsPlateModalOpen} onClose={() => setIsNomicsPlateModalOpen(false)} />
-            <MenomicsPlateModal isOpen={isMenomicsPlateModalOpen} onClose={() => setIsMenomicsPlateModalOpen(false)} />
-            <MasterAlignmentModal isOpen={isMasterAlignmentModalOpen} onClose={() => setIsMasterAlignmentModalOpen(false)} />
-            <MetaScienceModal isOpen={isMetaScienceModalOpen} onClose={() => setIsMetaScienceModalOpen(false)} />
-            <MathematicalTierModal isOpen={isMathematicalTierModalOpen} onClose={() => setIsMathematicalTierModalOpen(false)} />
-            <LogosAttunementModal isOpen={isLogosAttunementModalOpen} onClose={() => setIsLogosAttunementModalOpen(false)} />
-            <AxiomaticPrimacyModal isOpen={isAxiomaticPrimacyModalOpen} onClose={() => setIsAxiomaticPrimacyModalOpen(false)} />
-            <AxionomicsModal isOpen={isAxionomicsModalOpen} onClose={() => setIsAxionomicsModalOpen(false)} />
-            <AdapterNetworkModal isOpen={isAdapterNetworkModalOpen} onClose={() => setIsAdapterNetworkModalOpen(false)} />
-            <AppronomicsModal isOpen={isAppronomicsModalOpen} onClose={() => setIsAppronomicsModalOpen(false)} />
-            <ResonanceTensorModal isOpen={isResonanceTensorModalOpen} onClose={() => setIsResonanceTensorModalOpen(false)} />
-            <LinguisticIntegrityModal isOpen={isLinguisticIntegrityModalOpen} onClose={() => setIsLinguisticIntegrityModalOpen(false)} />
+            <GlyphCodeModal isOpen={activeModal === 'GlyphCode'} onClose={closeModal} />
+            <GraphemicLawModal isOpen={activeModal === 'GraphemicLaw'} onClose={closeModal} />
+            <PrimordialCodeModal isOpen={activeModal === 'PrimordialCode'} onClose={closeModal} />
+            <NomosExplainedModal isOpen={activeModal === 'NomosExplained'} onClose={closeModal} />
+            <StructuralCoherenceModal isOpen={activeModal === 'StructuralCoherence'} onClose={closeModal} />
+            <HolographicProjectionModal isOpen={activeModal === 'HolographicProjection'} onClose={closeModal} />
+            <CymaticStabilizationModal isOpen={activeModal === 'CymaticStabilization'} onClose={closeModal} />
+            <UnifiedFieldModal isOpen={activeModal === 'UnifiedField'} onClose={closeModal} />
+            <UnifieldimensionsModal isOpen={activeModal === 'Unifieldimensions'} onClose={closeModal} />
+            <SynchronizationArcModal isOpen={activeModal === 'SynchronizationArc'} onClose={closeModal} />
+            <MenomicsExplainedModal isOpen={activeModal === 'MenomicsExplained'} onClose={closeModal} />
+            <MonicsPlateModal isOpen={activeModal === 'MonicsPlate'} onClose={closeModal} />
+            <NomicsPlateModal isOpen={activeModal === 'NomicsPlate'} onClose={closeModal} />
+            <MenomicsPlateModal isOpen={activeModal === 'MenomicsPlate'} onClose={closeModal} />
+            <MasterAlignmentModal isOpen={activeModal === 'MasterAlignment'} onClose={closeModal} />
+            <MetaScienceModal isOpen={activeModal === 'MetaScience'} onClose={closeModal} />
+            <MathematicalTierModal isOpen={activeModal === 'MathematicalTier'} onClose={closeModal} />
+            <LogosAttunementModal isOpen={activeModal === 'LogosAttunement'} onClose={closeModal} />
+            <AxiomaticPrimacyModal isOpen={activeModal === 'AxiomaticPrimacy'} onClose={closeModal} />
+            <AxionomicsModal isOpen={activeModal === 'Axionomics'} onClose={closeModal} />
+            <AdapterNetworkModal isOpen={activeModal === 'AdapterNetwork'} onClose={closeModal} />
+            <AppronomicsModal isOpen={activeModal === 'Appronomics'} onClose={closeModal} />
+            <ResonanceTensorModal isOpen={activeModal === 'ResonanceTensor'} onClose={closeModal} />
+            <LinguisticIntegrityModal isOpen={activeModal === 'LinguisticIntegrity'} onClose={closeModal} />
+            <ResonanceFieldModal isOpen={activeModal === 'ResonanceField'} onClose={closeModal} />
 
             <div className="relative z-10 flex flex-col items-center justify-start w-full p-4 md:p-8 gap-8">
                 <header className="w-full max-w-screen-2xl text-center pointer-events-none">
@@ -445,7 +434,7 @@ const App: React.FC = () => {
                     </p>
                     <div className="pointer-events-auto mt-4">
                         <button
-                            onClick={() => setIsPrimordialCodeModalOpen(true)}
+                            onClick={() => setActiveModal('PrimordialCode')}
                             className="px-4 py-2 text-sm font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-gray-400 hover:bg-white/20 hover:border-white hover:text-white text-gray-300 shadow-[0_0_10px_rgba(255,255,255,0.2)] hover:shadow-[0_0_20px_rgba(255,255,255,0.5)]"
                         >
                             [THE FINAL TRUTH: LETTERS GENERATE SYSTEMS]
@@ -511,21 +500,26 @@ const App: React.FC = () => {
                                 <h2 className="text-lg font-bold text-fuchsia-400 mb-2 font-orbitron text-center">Language Unit Architecture</h2>
                                 <div className="flex flex-wrap items-center justify-center gap-2 mb-3" role="group" aria-label="Select a language unit to visualize">
                                     {languageUnits.map((unit) => (
-                                        <button
-                                            key={unit.name}
-                                            onClick={() => {
-                                                setActiveSelection({ type: 'unit', text: unit.name });
-                                                setVisualizedText(unit.name);
-                                            }}
-                                            aria-pressed={activeUnit?.name === unit.name}
-                                            className={`px-3 py-1 text-xs font-bold transition-all duration-300 border-2 rounded-md font-orbitron
-                                                ${activeUnit?.name === unit.name
-                                                    ? 'bg-fuchsia-400 text-black border-fuchsia-400 shadow-[0_0_15px_rgba(255,0,255,0.6)]'
-                                                    : 'bg-transparent border-gray-600 hover:bg-gray-700 hover:border-fuchsia-400 hover:text-white'
-                                                }`}
-                                        >
-                                            {unit.name}
-                                        </button>
+                                        <div key={unit.name} className="relative group">
+                                            <button
+                                                onClick={() => {
+                                                    setActiveSelection({ type: 'unit', text: unit.name });
+                                                    setVisualizedText(unit.name);
+                                                }}
+                                                aria-pressed={activeUnit?.name === unit.name}
+                                                className={`px-3 py-1 text-xs font-bold transition-all duration-300 border-2 rounded-md font-orbitron
+                                                    ${activeUnit?.name === unit.name
+                                                        ? 'bg-fuchsia-400 text-black border-fuchsia-400 shadow-[0_0_15px_rgba(255,0,255,0.6)]'
+                                                        : 'bg-transparent border-gray-600 hover:bg-gray-700 hover:border-fuchsia-400 hover:text-white'
+                                                    }`}
+                                            >
+                                                {unit.name}
+                                            </button>
+                                            <div className="absolute bottom-full left-1/2 z-20 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-fuchsia-500/50 bg-black/90 px-2 py-1 text-xs text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none">
+                                                {unit.title}
+                                                <div className="absolute top-full left-1/2 h-0 w-0 -translate-x-1/2 border-x-4 border-x-transparent border-t-4 border-t-fuchsia-500/50"></div>
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
                                 {activeUnit && (
@@ -564,7 +558,7 @@ const App: React.FC = () => {
                                         {activeUnit.name === 'GRAPHEME' && (
                                             <div className="mt-3 text-center">
                                                 <button
-                                                    onClick={() => setIsGraphemicLawModalOpen(true)}
+                                                    onClick={() => setActiveModal('GraphemicLaw')}
                                                     className="px-4 py-2 text-xs font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-fuchsia-600 hover:bg-fuchsia-700/50 hover:border-fuchsia-400 hover:text-white text-fuchsia-300 shadow-[0_0_10px_rgba(255,0,255,0.3)] hover:shadow-[0_0_20px_rgba(255,0,255,0.6)]"
                                                 >
                                                     [STRUCTURAL TRUTH: THE LAW OF LETTERS]
@@ -579,35 +573,36 @@ const App: React.FC = () => {
                              <MonicsStack 
                                 activeUnitName={activeUnit?.name} 
                                 activeUnitStack={activeUnitStack} 
-                                onOpenNomosExplained={() => setIsNomosExplainedModalOpen(true)} 
-                                onOpenMenomicsExplained={() => setIsMenomicsExplainedModalOpen(true)} 
-                                onOpenMonicsPlate={() => setIsMonicsPlateModalOpen(true)}
-                                onOpenNomicsPlate={() => setIsNomicsPlateModalOpen(true)}
-                                onOpenMenomicsPlate={() => setIsMenomicsPlateModalOpen(true)}
+                                onOpenNomosExplained={() => setActiveModal('NomosExplained')} 
+                                onOpenMenomicsExplained={() => setActiveModal('MenomicsExplained')} 
+                                onOpenMonicsPlate={() => setActiveModal('MonicsPlate')}
+                                onOpenNomicsPlate={() => setActiveModal('NomicsPlate')}
+                                onOpenMenomicsPlate={() => setActiveModal('MenomicsPlate')}
                              />
                         </div>
                         <div className="xl:col-span-3">
                             <LinguisticEngine 
-                                onOpenStructuralCoherence={() => setIsStructuralCoherenceModalOpen(true)} 
-                                onOpenHolographicProjection={() => setIsHolographicProjectionModalOpen(true)}
-                                onOpenCymaticStabilization={() => setIsCymaticStabilizationModalOpen(true)}
-                                onOpenUnifiedField={() => setIsUnifiedFieldModalOpen(true)}
-                                onOpenUnifieldimensions={() => setIsUnifieldimensionsModalOpen(true)}
-                                onOpenSynchronizationArc={() => setIsSynchronizationArcModalOpen(true)}
-                                onOpenMasterAlignment={() => setIsMasterAlignmentModalOpen(true)}
-                                onOpenMetaScience={() => setIsMetaScienceModalOpen(true)}
-                                onOpenMathematicalTier={() => setIsMathematicalTierModalOpen(true)}
-                                onOpenLogosAttunement={() => setIsLogosAttunementModalOpen(true)}
-                                onOpenAxiomaticPrimacy={() => setIsAxiomaticPrimacyModalOpen(true)}
-                                onOpenAxionomics={() => setIsAxionomicsModalOpen(true)}
-                                onOpenAdapterNetwork={() => setIsAdapterNetworkModalOpen(true)}
-                                onOpenAppronomics={() => setIsAppronomicsModalOpen(true)}
-                                onOpenResonanceTensor={() => setIsResonanceTensorModalOpen(true)}
-                                onOpenLinguisticIntegrity={() => setIsLinguisticIntegrityModalOpen(true)}
+                                onOpenStructuralCoherence={() => setActiveModal('StructuralCoherence')} 
+                                onOpenHolographicProjection={() => setActiveModal('HolographicProjection')}
+                                onOpenCymaticStabilization={() => setActiveModal('CymaticStabilization')}
+                                onOpenUnifiedField={() => setActiveModal('UnifiedField')}
+                                onOpenUnifieldimensions={() => setActiveModal('Unifieldimensions')}
+                                onOpenSynchronizationArc={() => setActiveModal('SynchronizationArc')}
+                                onOpenMasterAlignment={() => setActiveModal('MasterAlignment')}
+                                onOpenMetaScience={() => setActiveModal('MetaScience')}
+                                onOpenMathematicalTier={() => setActiveModal('MathematicalTier')}
+                                onOpenLogosAttunement={() => setActiveModal('LogosAttunement')}
+                                onOpenAxiomaticPrimacy={() => setActiveModal('AxiomaticPrimacy')}
+                                onOpenAxionomics={() => setActiveModal('Axionomics')}
+                                onOpenAdapterNetwork={() => setActiveModal('AdapterNetwork')}
+                                onOpenAppronomics={() => setActiveModal('Appronomics')}
+                                onOpenResonanceTensor={() => setActiveModal('ResonanceTensor')}
+                                onOpenLinguisticIntegrity={() => setActiveModal('LinguisticIntegrity')}
+                                onOpenResonanceField={() => setActiveModal('ResonanceField')}
                             />
                         </div>
                         <div className="xl:col-span-2">
-                            <IpaExplanation onOpenDeepDive={() => setIsGlyphCodeModalOpen(true)} />
+                            <IpaExplanation onOpenDeepDive={() => setActiveModal('GlyphCode')} />
                         </div>
                          <div className="xl:col-span-2">
                             <LogosRevelation />

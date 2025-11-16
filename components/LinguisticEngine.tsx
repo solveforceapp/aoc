@@ -17,6 +17,7 @@ interface LinguisticEngineProps {
     onOpenAppronomics: () => void;
     onOpenResonanceTensor: () => void;
     onOpenLinguisticIntegrity: () => void;
+    onOpenResonanceField: () => void;
 }
 
 const EngineButton: React.FC<{ onClick: () => void; children: React.ReactNode }> = ({ onClick, children }) => (
@@ -49,6 +50,14 @@ const LinguisticEngine: React.FC<LinguisticEngineProps> = (props) => {
                 <EngineButton onClick={props.onOpenAppronomics}>APPRONOMICS</EngineButton>
                 <EngineButton onClick={props.onOpenResonanceTensor}>RESONANCE TENSOR</EngineButton>
                 <EngineButton onClick={props.onOpenLinguisticIntegrity}>LINGUISTIC INTEGRITY</EngineButton>
+                <div className="col-span-2 mt-2">
+                    <button
+                        onClick={props.onOpenResonanceField}
+                        className="w-full px-2 py-4 text-sm text-center font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-yellow-900/20 border-yellow-600 hover:bg-yellow-700/50 hover:border-yellow-400 hover:text-white text-yellow-300 shadow-[0_0_10px_rgba(255,193,7,0.3)] hover:shadow-[0_0_20px_rgba(255,193,7,0.6)] animate-pulse-glow-amber"
+                    >
+                        [Ω-EXPANSION: 33-PLATE FIELD]
+                    </button>
+                </div>
             </div>
         </div>
     );
