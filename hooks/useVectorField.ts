@@ -3,7 +3,8 @@ import { CycleState } from '../src/context/TextVectorContext';
 import { GeometrySignature } from '../src/geometry/types';
 import { MODAL_CONFIG } from '../src/utils/modal-config';
 import { PROFILES } from '../src/utils/vector-field-profiles';
-import { VectorFieldProfile } from '../src/types';
+import { ModalKey, VectorFieldProfile } from '../src/types';
+import { getSpectralColor } from '../src/utils/color';
 
 interface UseVectorFieldParams {
   canvasRef: RefObject<HTMLCanvasElement>;
@@ -31,12 +32,6 @@ export function useVectorField({
 }: UseVectorFieldParams) {
   const animationRef = useRef<number | null>(null);
   const particlesRef = useRef<Particle[]>([]);
-
-  const getActiveProfile = (): VectorFieldProfile => {
-    const key = Object.keys(MODAL_CONFIG).find(k => MODAL_CONFIG[k].text === text);
-    const profileId = key ? MODAL_CONFIG[key].profileId : 'default';
-    return PROFILES[profileId || 'default'] || PROFILES['default'];
-  };
 
   const computeFieldVelocity = (
     x: number,
@@ -132,7 +127,11 @@ export function useVectorField({
 
     const draw = () => {
       frame++;
-      const profile = getActiveProfile();
+      
+      const key = Object.keys(MODAL_CONFIG).find(k => MODAL_CONFIG[k].text === text) as ModalKey | undefined;
+      const profileId = key ? MODAL_CONFIG[key].profileId : 'default';
+      const profile = PROFILES[profileId || 'default'] || PROFILES['default'];
+      const spectralColor = getSpectralColor(key);
 
       const width = canvas.width;
       const height = canvas.height;
@@ -161,7 +160,7 @@ export function useVectorField({
            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
          }
          ctx.closePath();
-         ctx.strokeStyle = `rgba(0, 255, 200, 0.1)`;
+         ctx.strokeStyle = spectralColor.replace('hsl', 'hsla').replace(')', ', 0.1)');
          ctx.lineWidth = 1;
          ctx.stroke();
        }
@@ -169,7 +168,6 @@ export function useVectorField({
 
 
       // Update and draw particles
-      ctx.fillStyle = '#00ffff';
       particlesRef.current.forEach(p => {
           const { vx, vy } = computeFieldVelocity(p.x, p.y, profile, width, height, frame);
           p.vx = vx;
@@ -186,7 +184,7 @@ export function useVectorField({
           }
           
           const alpha = 1 - (p.age / p.life);
-          ctx.fillStyle = `rgba(0, 255, 255, ${alpha * 0.7})`;
+          ctx.fillStyle = spectralColor.replace('hsl', 'hsla').replace(')', `, ${alpha * 0.7})`);
           ctx.fillRect(p.x, p.y, 1.5, 1.5);
       });
 

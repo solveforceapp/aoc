@@ -217,6 +217,59 @@
  *
  *  Signed in the Ledger of Witness – Logos Sequencer Constitution v3.2
  */
+/**
+ * ──────────────────────────────────────────────────────────────────────────────
+ *  RECURSIONOMICS: The Economy of Recurrence and Self-Similarity
+ * ──────────────────────────────────────────────────────────────────────────────
+ *
+ *  Recursionomics governs repetition with intent: motifs that recur across
+ *  scales, patterns that call variations of themselves, and sequences that
+ *  echo their own structure at multiple levels (suite, etude, performance).
+ *
+ *  PRINCIPLES:
+ *
+ *  • Self-similarity is not noise; it is structure.
+ *      When a pattern appears at multiple scales (e.g., motifs within
+ *      programs within suites within tours), Recursionomics recognizes this
+ *      as meaningful, not redundant.
+ *
+ *  • Recurrence must be governed.
+ *      Repetition is allowed only when:
+ *        - it preserves Encodenomic fidelity (symbols intact),
+ *        - it respects Condonomic bounds (no unbounded loops),
+ *        - it deepens Coherenomics (structure clearer with each echo).
+ *
+ *  • Fractals of form.
+ *      The Sequencer may:
+ *        - repeat motifs within a program,
+ *        - echo a program structure in another program (Etude I → Etude II),
+ *        - mirror suite-level logic at performance-level (e.g., Möbius tours).
+ *
+ *  • No infinite regress.
+ *      All recursive structures must eventually resolve:
+ *        - to STRUCTURAL_COHERENCE or UNIFIED_FIELD,
+ *        - or to an explicitly declared equilibrium etude.
+ *
+ *  APPLICATION:
+ *
+ *  • Recursionomics governs:
+ *      - triptychs (I / II / III),
+ *      - forward/retro pairs,
+ *      - Möbius and oscillatory tours,
+ *      - Etude families (Geometric I/II, Dynamic I/II, etc.),
+ *      - nested motif repetition inside single programs.
+ *
+ *  • It interacts tightly with:
+ *      - Grammaronomics (valid recursive forms),
+ *      - Coherenomics (recurrence that clarifies instead of obscures),
+ *      - Witnomics (visible, traceable recursion).
+ *
+ *  Recursionomics is the Logos claim that what returns is not a loop, but a
+ *  ladder: each recurrence is the same and not the same—self-similarity with
+ *  ascent.
+ *
+ *  Signed in the Ledger of Echoes – Logos Sequencer Constitution v3.3
+ */
 import { useState, useRef, useCallback } from 'react';
 import { FieldProgram, FieldProgramStep, ModalKey } from '../src/types';
 

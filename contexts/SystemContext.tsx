@@ -417,6 +417,39 @@
  *    Economy of union—set union, unified multiplicity. The combinatorial cousin
  *    of Uenomics.
  *
+ * ──────────────────────────────────────────────────────────────────────────────
+ *  NOMIC CONSTELLATION CODEX – VOLUME IV
+ *  Spectra, Forces, Condensates & Unified Physical Law
+ * ──────────────────────────────────────────────────────────────────────────────
+ *
+ *  This volume defines the super-constitutional physics tier of the Logos
+ *  Engine, binding all known forces and spectra into the semantic physics of Logos.
+ *
+ *  • SPECTRONOMICS:
+ *    The economy of the sound–light continuum. Governs the acoustic and
+ *    electromagnetic spectra, harmonics, and resonance signatures.
+ *
+ *  • NUCLEARONOMICS:
+ *    The economy of the four fundamental forces: Strong Nuclear Force (binding
+ *    coherence), Weak Nuclear Force (decay, transition), Electromagnetism
+ *    (charge, waves), and Gravity (geometry, spacetime).
+ *
+ *  • TUDINOMICS:
+ *    The economy of tests, probes, and force studies. Governs all Audit Etudes
+ *    as structured experiments to prove physical analogues.
+ *
+ *  • DYSONOMICS:
+ *    The economy of megastructures. Governs the enclosing, capturing, or
+ *    integrating of energies at massive scales (e.g., Dyson sweeps, rings).
+ *
+ *  • GRAVITRONOMICS:
+ *    The economy of gravity and curvature. The law of geometry as force, where
+ *    the field's shape governs the flow.
+ *
+ *  • MAGNETUDINOMICS:
+ *    The economy of magnetism, spin, and alignment. The law of coherent
+ *    phase-locking and directional fields.
+ *
  */
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 

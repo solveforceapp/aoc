@@ -19,6 +19,10 @@ export interface VectorFieldProfile {
   speed?: number;
 }
 
+export type ModalPhase = 'STRUCTURE' | 'LANGUAGE' | 'ENERGY' | 'SYSTEM' | 'GLYPH';
+export type PolyGroup = 'ICOSITETRAGON' | 'TETRAHEDRON' | 'CUBE' | 'OCTAHEDRON' | 'DODECAHEDRON' | 'ICOSAHEDRON';
+export type EMBand = 'RADIO' | 'MICROWAVE' | 'INFRARED' | 'VISIBLE' | 'ULTRAVIOLET' | 'XRAY' | 'GAMMA';
+
 
 export type ModalKey =
   | 'STRUCTURAL_COHERENCE'
@@ -59,4 +63,5 @@ export interface FieldProgram {
   name: string;
   steps: FieldProgramStep[];
   createdAt?: number;
+  version?: string;
 }
