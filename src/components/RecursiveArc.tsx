@@ -170,14 +170,14 @@ Based on this seed, perform the following analysis and respond ONLY with a valid
                         onClick={() => openModal('GENESIS_ENGINE', { seed: activeConcept })}
                         className="px-4 py-3 text-xs font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-amber-800 hover:bg-amber-700/50 hover:border-amber-400 text-amber-300"
                         >
-                            [+ CREATE]
+                            <span className="bracket">[</span>+ CREATE<span className="bracket">]</span>
                         </button>
                     <button
                         onClick={handleSynthesis}
                         disabled={isLoading}
                         className="w-full px-4 py-3 text-sm font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-violet-600 hover:bg-violet-700/50 hover:border-violet-400 hover:text-white text-violet-300 shadow-[0_0_10px_rgba(138,43,226,0.3)] hover:shadow-[0_0_20px_rgba(138,43,226,0.6)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                     >
-                        {isLoading ? '[SYNTHESIZING...]' : '[SYNTHESIZE]'}
+                        {isLoading ? <><span className="bracket">[</span>SYNTHESIZING...<span className="bracket">]</span></> : <><span className="bracket">[</span>SYNTHESIZE<span className="bracket">]</span></>}
                     </button>
                 </div>
             </div>

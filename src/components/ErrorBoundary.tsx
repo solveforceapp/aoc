@@ -30,7 +30,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
       );
     }
 
-    // FIX: Replaced destructuring with a direct return to bypass a potential tooling error.
+    // FIX: Directly returning `this.props.children` to avoid a potential property access error on `this.props`.
     return this.props.children;
   }
 }

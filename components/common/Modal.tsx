@@ -134,7 +134,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, borderC
                         onClick={handleCreateTreatise}
                         className="text-sm px-4 py-2 border border-amber-800 rounded-md hover:bg-amber-700/50 hover:text-white transition-colors text-amber-300 font-orbitron shadow-[0_0_10px_rgba(255,193,7,0.3)] animate-pulse-glow-amber"
                     >
-                        [+ Create Treatise]
+                        <span className="bracket">[</span>+ Create Treatise<span className="bracket">]</span>
                     </button>
                     <div className="flex gap-2">
                         <button onClick={handlePrint} className="text-xs px-3 py-1.5 border border-gray-600 rounded-md hover:bg-gray-700 hover:text-white transition-colors text-gray-400">Print</button>

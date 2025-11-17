@@ -565,7 +565,7 @@ const GenesisEngineModal: React.FC<{ isOpen: boolean; onClose: () => void; }> = 
                         </div>
                          {!isBatchAdding ? (
                             <button onClick={() => setIsBatchAdding(true)} className="w-full text-center text-xs py-1.5 border border-dashed border-gray-600 text-gray-400 rounded-md hover:border-amber-400 hover:text-amber-300 transition-colors">
-                                [Add Multiple]
+                                <span className="bracket">[</span>Add Multiple<span className="bracket">]</span>
                             </button>
                         ) : (
                             <div className="p-2 border border-dashed border-amber-500 rounded-md space-y-2 animate-fade-in">
@@ -587,7 +587,7 @@ const GenesisEngineModal: React.FC<{ isOpen: boolean; onClose: () => void; }> = 
             </div>
             <div className="pt-4 mt-auto flex-shrink-0">
                 <button onClick={handleGenerateOutline} disabled={isGeneratingOutline || isAutoGeneratingChapters} className="w-full px-4 py-3 text-sm font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-amber-600 hover:bg-amber-700/50 hover:border-amber-400 hover:text-white text-amber-300 shadow-[0_0_10px_rgba(255,193,7,0.3)] hover:shadow-[0_0_20px_rgba(255,193,7,0.6)] disabled:opacity-50 disabled:cursor-not-allowed">
-                    {isGeneratingOutline ? '[SYNTHESIZING OUTLINE...]' : '[GENERATE OUTLINE & INTRO]'}
+                    {isGeneratingOutline ? <><span className="bracket">[</span>SYNTHESIZING OUTLINE...<span className="bracket">]</span></> : <><span className="bracket">[</span>GENERATE OUTLINE & INTRO<span className="bracket">]</span></>}
                 </button>
             </div>
         </div>
@@ -608,11 +608,11 @@ const GenesisEngineModal: React.FC<{ isOpen: boolean; onClose: () => void; }> = 
                 <div className="flex-shrink-0">
                     {isAutoGenerating ? (
                          <button onClick={handleStopAutoGeneration} className="w-full px-4 py-2 text-sm font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-red-900/50 border-red-500 hover:bg-red-700/50 text-red-300">
-                           [STOP AUTO-GENERATION]
+                           <span className="bracket">[</span>STOP AUTO-GENERATION<span className="bracket">]</span>
                          </button>
                     ) : (
                          <button onClick={handleStartAutoGeneration} disabled={loadingChapterIndex !== null} className="w-full px-4 py-2 text-sm font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-amber-600 hover:bg-amber-700/50 hover:border-amber-400 text-amber-300 disabled:opacity-50">
-                            [GENERATE ALL MISSING CONTENT]
+                            <span className="bracket">[</span>GENERATE ALL MISSING CONTENT<span className="bracket">]</span>
                          </button>
                     )}
                 </div>
@@ -627,7 +627,7 @@ const GenesisEngineModal: React.FC<{ isOpen: boolean; onClose: () => void; }> = 
                             <h3 className="text-xl font-bold font-orbitron">Chapter {index + 1}: {chapter.chapterTitle}</h3>
                             {!chapter.content && (
                                 <button onClick={() => handleGenerateChapterContent(index)} disabled={loadingChapterIndex !== null || isAutoGenerating} className="text-xs px-3 py-1.5 border border-amber-600 rounded-md hover:bg-amber-700/50 text-amber-300 transition-colors disabled:opacity-50 hide-on-print">
-                                   {loadingChapterIndex === index ? 'SYNTHESIZING...' : '[GENERATE CONTENT]'}
+                                   {loadingChapterIndex === index ? 'SYNTHESIZING...' : <><span className="bracket">[</span>GENERATE CONTENT<span className="bracket">]</span></>}
                                 </button>
                             )}
                         </div>
@@ -638,7 +638,7 @@ const GenesisEngineModal: React.FC<{ isOpen: boolean; onClose: () => void; }> = 
                         )}
                         <MarkdownRenderer content={chapter.content} isStreaming={loadingChapterIndex === index} />
                         {(loadingChapterIndex !== index && !chapter.content) && (
-                            <p className="text-gray-600 italic text-sm text-center py-4 hide-on-print">[Content for this chapter has not been generated yet]</p>
+                            <p className="text-gray-600 italic text-sm text-center py-4 hide-on-print"><span className="bracket">[</span>Content for this chapter has not been generated yet<span className="bracket">]</span></p>
                         )}
                     </div>
                 ))}

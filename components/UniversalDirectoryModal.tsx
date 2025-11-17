@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import Modal from './common/Modal';
 import { useCodex } from '../src/context/CodexContext';
 import { CodexEntry } from '../src/types';
@@ -54,19 +54,20 @@ const NUMERIC_DIRECTORY: DirectoryKey[] = [
     { glyph: '0', bindings: ['Zero-Pointonomics'], systemFunction: 'Reset, null, infinite potential', semanticField: 'Nothing and everything' },
 ];
 
-const ALL_DIRECTORY_KEYS = [...ALPHABET_DIRECTORY, ...NUMERIC_DIRECTORY];
-
 const KeyButton: React.FC<{
     keyData: DirectoryKey;
     onSelect: (keyData: DirectoryKey) => void;
     isSelected: boolean;
-}> = ({ keyData, onSelect, isSelected }) => (
+    hasEntries: boolean;
+}> = ({ keyData, onSelect, isSelected, hasEntries }) => (
     <button
         onClick={() => onSelect(keyData)}
         className={`w-full aspect-square flex items-center justify-center text-xl font-orbitron font-bold border-2 rounded-md transition-all duration-200
             ${isSelected 
                 ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.7)] scale-110' 
-                : 'bg-black/20 border-gray-600 hover:border-gray-400 hover:bg-gray-800 text-gray-400 hover:text-white'
+                : hasEntries
+                ? 'bg-black/20 border-gray-500 hover:border-gray-300 hover:bg-gray-800 text-gray-200 hover:text-white' // Bright for letters with entries
+                : 'bg-black/20 border-gray-700 hover:border-gray-500 hover:bg-gray-800 text-gray-500 hover:text-gray-300' // Dim but visible for empty letters
             }`}
         aria-label={`Select glyph ${keyData.glyph}`}
         aria-pressed={isSelected}
@@ -120,6 +121,15 @@ interface UniversalDirectoryModalProps {
 const UniversalDirectoryModal: React.FC<UniversalDirectoryModalProps> = ({ isOpen, onClose }) => {
     const { personalEntries, universalEntries, selectedEntryId, setSelectedEntryId } = useCodex();
     const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
+    const [selectedLetterInfo, setSelectedLetterInfo] = useState<DirectoryKey | null>(null);
+
+    useEffect(() => {
+        if (isOpen) {
+            setSelectedLetter(null);
+            setSelectedLetterInfo(null);
+            setSelectedEntryId(null);
+        }
+    }, [isOpen, setSelectedEntryId]);
 
     const allEntries = useMemo(() => [...personalEntries, ...universalEntries], [personalEntries, universalEntries]);
 
@@ -144,12 +154,12 @@ const UniversalDirectoryModal: React.FC<UniversalDirectoryModalProps> = ({ isOpe
 
     const filteredEntries = useMemo(() => (selectedLetter ? entriesByLetter[selectedLetter] || [] : []), [entriesByLetter, selectedLetter]);
     const selectedEntry = useMemo(() => allEntries.find(e => e.id === selectedEntryId) || null, [allEntries, selectedEntryId]);
-    const selectedLetterInfo = useMemo(() => ALL_DIRECTORY_KEYS.find(k => k.glyph === selectedLetter), [selectedLetter]);
-
-    const handleLetterSelect = (keyData: DirectoryKey) => {
+    
+    const handleLetterSelect = useCallback((keyData: DirectoryKey) => {
         setSelectedLetter(keyData.glyph);
+        setSelectedLetterInfo(keyData);
         setSelectedEntryId(null); // Clear entry selection when a new letter is chosen
-    };
+    }, [setSelectedEntryId]);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="[UNIVERSAL DIRECTORY & CODEX]" borderColor="border-gray-400">
@@ -163,6 +173,7 @@ const UniversalDirectoryModal: React.FC<UniversalDirectoryModalProps> = ({ isOpe
                                 keyData={keyData} 
                                 onSelect={handleLetterSelect}
                                 isSelected={selectedLetter === keyData.glyph}
+                                hasEntries={!!entriesByLetter[keyData.glyph]}
                             />
                         ))}
                     </div>
@@ -173,6 +184,7 @@ const UniversalDirectoryModal: React.FC<UniversalDirectoryModalProps> = ({ isOpe
                                 keyData={keyData} 
                                 onSelect={handleLetterSelect}
                                 isSelected={selectedLetter === keyData.glyph}
+                                hasEntries={!!entriesByLetter[keyData.glyph]}
                             />
                         ))}
                     </div>

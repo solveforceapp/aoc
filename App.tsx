@@ -18,6 +18,7 @@ import GenerativeEnginomicsConsole from './components/GenerativeEnginomicsConsol
 import GeneratedCodex from './components/GeneratedCodex';
 import ImageGenerator from './components/ImageGenerator';
 import ImageCodex from './components/ImageCodex';
+import PneumaCycle from './src/components/PneumaCycle';
 
 // Modal Components
 import StructuralCoherenceModal from './components/StructuralCoherenceModal';
@@ -134,6 +135,10 @@ const App: React.FC = () => {
                             <HermeneuticThesaurus activeConcept={activeConcept} setActiveConcept={setActiveConcept} />
                             <GenerativeEnginomicsConsole activeConcept={activeConcept} setActiveConcept={setActiveConcept} />
                             <ImageGenerator setGenerationState={() => {}} activeConcept={activeConcept} />
+                            <PneumaCycle
+                                onOpenUniversalDirectory={() => openModal('UNIVERSAL_DIRECTORY')}
+                                onOpenCommaCorollary={() => openModal('COMMA_COROLLARY')}
+                            />
                         </div>
                         
                         {/* Right Column */}

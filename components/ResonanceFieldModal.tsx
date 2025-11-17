@@ -307,7 +307,7 @@ Respond ONLY with a valid JSON object that adheres to the provided schema. The m
                                         : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'
                                 }`}
                             >
-                                [Ω-AUDIT]
+                                <span className="bracket">[</span>Ω-AUDIT<span className="bracket">]</span>
                             </button>
                         </div>
                     </div>
@@ -333,7 +333,7 @@ Respond ONLY with a valid JSON object that adheres to the provided schema. The m
                                 disabled={isGenerating}
                                 className="px-6 py-2 text-sm font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-yellow-600 hover:bg-yellow-700/50 hover:border-yellow-400 hover:text-white text-yellow-300 shadow-[0_0_10px_rgba(255,193,7,0.3)] hover:shadow-[0_0_20px_rgba(255,193,7,0.6)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                             >
-                                {isGenerating ? '[TRANSDUCING...]' : '[INDUCE]'}
+                                {isGenerating ? <><span className="bracket">[</span>TRANSDUCING...<span className="bracket">]</span></> : <><span className="bracket">[</span>INDUCE<span className="bracket">]</span></>}
                             </button>
                         </div>
                         {isGenerating && (
@@ -349,7 +349,7 @@ Respond ONLY with a valid JSON object that adheres to the provided schema. The m
                         <div className="mt-6 border-t-2 border-green-400/50 pt-4">
                             <div className="flex justify-between items-center mb-2">
                                 <h2 className="text-xl font-bold text-green-300 font-orbitron">Generated Plate: Transduction Complete</h2>
-                                <button onClick={() => setGeneratedPlate(null)} className="px-3 py-1 text-xs font-bold transition-colors duration-300 border rounded-md font-orbitron bg-red-900/20 border-red-500 hover:bg-red-700/50 text-red-300 hover:text-white">[CLEAR]</button>
+                                <button onClick={() => setGeneratedPlate(null)} className="px-3 py-1 text-xs font-bold transition-colors duration-300 border rounded-md font-orbitron bg-red-900/20 border-red-500 hover:bg-red-700/50 text-red-300 hover:text-white"><span className="bracket">[</span>CLEAR<span className="bracket">]</span></button>
                             </div>
                             {renderPlate(generatedPlate)}
                         </div>

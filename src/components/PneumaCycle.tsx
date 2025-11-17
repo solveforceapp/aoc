@@ -17,13 +17,13 @@ const PneumaCycle: React.FC<PneumaCycleProps> = ({ onOpenUniversalDirectory, onO
                     onClick={onOpenUniversalDirectory}
                     className="w-full px-4 py-3 text-sm font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-gray-500 hover:bg-gray-700/50 hover:border-white hover:text-white text-gray-300 shadow-[0_0_10px_rgba(150,150,150,0.2)] hover:shadow-[0_0_20px_rgba(255,255,255,0.4)]"
                 >
-                    [ACCESS DIRECTORY]
+                    <span className="bracket">[</span>ACCESS DIRECTORY<span className="bracket">]</span>
                 </button>
                  <button
                     onClick={onOpenCommaCorollary}
                     className="w-full px-4 py-3 text-sm font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-amber-800 hover:bg-amber-700/50 hover:border-amber-400 hover:text-white text-amber-300 shadow-[0_0_10px_rgba(255,193,7,0.3)] hover:shadow-[0_0_20px_rgba(255,193,7,0.6)] animate-pulse-glow-amber"
                 >
-                    [EXPAND PREDICATE ,]
+                    <span className="bracket">[</span>EXPAND PREDICATE<span className="bracket">]</span>
                 </button>
             </div>
         </div>

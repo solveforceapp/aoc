@@ -106,13 +106,12 @@ The JSON object must contain:
                         disabled={isLoading}
                         className="flex-grow px-4 py-2 text-base font-sans bg-black/30 border-2 border-gray-600 rounded-md focus:outline-none focus:border-amber-400 focus:shadow-[0_0_15px_rgba(255,193,7,0.6)] text-amber-300 placeholder-gray-500 transition-all duration-300 disabled:opacity-50"
                     />
-                    <span className="text-4xl font-thin text-amber-400 hidden sm:block">,</span>
                     <button
                         onClick={handleGenerate}
                         disabled={isLoading}
                         className="px-6 py-2 text-sm font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-amber-600 hover:bg-amber-700/50 hover:border-amber-400 hover:text-white text-amber-300 shadow-[0_0_10px_rgba(255,193,7,0.3)] hover:shadow-[0_0_20px_rgba(255,193,7,0.6)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                     >
-                        {isLoading ? '[EXPANDING...]' : '[EXPAND]'}
+                        {isLoading ? <><span className="bracket">[</span>EXPANDING...<span className="bracket">]</span></> : <><span className="bracket">[</span>EXPAND<span className="bracket">]</span></>}
                     </button>
                 </div>
 

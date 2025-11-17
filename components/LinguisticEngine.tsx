@@ -1,6 +1,7 @@
 
 
 
+
 import React, { useState } from 'react';
 
 interface LinguisticEngineProps {
@@ -47,7 +48,7 @@ const BackButton = ({ onClick }: { onClick: () => void }) => (
         onClick={onClick}
         className="w-full px-2 py-3 text-xs text-center font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-gray-600 hover:bg-gray-700/50 hover:border-white hover:text-white text-gray-300"
     >
-        [← BACK]
+        <span className="bracket">[</span>← BACK<span className="bracket">]</span>
     </button>
 );
 
@@ -105,7 +106,7 @@ const LinguisticEngine = (props: LinguisticEngineProps) => {
                     onClick={() => { props.setActiveConcept('GRAMMAR'); props.onOpenUniversalGrammar(); }}
                     className="w-full px-2 py-3 text-sm text-center font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-cyan-900/20 border-cyan-600 hover:bg-cyan-700/50 hover:border-cyan-400 hover:text-white text-cyan-300 shadow-[0_0_10px_rgba(0,255,255,0.3)] hover:shadow-[0_0_20px_rgba(0,255,255,0.6)] animate-pulse-glow-cyan"
                 >
-                    [UNIVERSAL GRAMMAR]
+                    <span className="bracket">[</span>UNIVERSAL GRAMMAR<span className="bracket">]</span>
                 </button>
             </div>
             <div className="col-span-2 mt-2">
@@ -113,7 +114,7 @@ const LinguisticEngine = (props: LinguisticEngineProps) => {
                     onClick={() => { props.setActiveConcept('Ω-EXPANSION'); props.onOpenResonanceField(); }}
                     className="w-full px-2 py-4 text-sm text-center font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-yellow-900/20 border-yellow-600 hover:bg-yellow-700/50 hover:border-yellow-400 hover:text-white text-yellow-300 shadow-[0_0_10px_rgba(255,193,7,0.3)] hover:shadow-[0_0_20px_rgba(255,193,7,0.6)] animate-pulse-glow-amber"
                 >
-                    [Ω-EXPANSION: 3D-PLATE FIELD]
+                    <span className="bracket">[</span>Ω-EXPANSION: 3D-PLATE FIELD<span className="bracket">]</span>
                 </button>
             </div>
         </div>

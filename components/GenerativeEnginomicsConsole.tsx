@@ -179,14 +179,14 @@ Your output must be a single, valid JSON object following this schema:
                         onClick={() => openModal('GENESIS_ENGINE', { seed: activeConcept })}
                         className="px-4 py-3 text-xs font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-amber-800 hover:bg-amber-700/50 hover:border-amber-400 text-amber-300"
                         >
-                            [+ CREATE]
+                            <span className="bracket">[</span>+ CREATE<span className="bracket">]</span>
                         </button>
                     <button
                         onClick={handleConstruct}
                         disabled={isLoading}
                         className="w-full px-4 py-3 text-xs font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-teal-600 hover:bg-teal-700/50 hover:border-teal-400 hover:text-white text-teal-300 shadow-[0_0_10px_rgba(0,200,200,0.3)] hover:shadow-[0_0_20px_rgba(0,200,200,0.6)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent whitespace-nowrap"
                     >
-                        {isLoading ? '[CONSTRUCTING...]' : '[INSTRUCT / CONSTRUCT / DEDUCE]'}
+                        {isLoading ? <><span className="bracket">[</span>CONSTRUCTING...<span className="bracket">]</span></> : <><span className="bracket">[</span>INSTRUCT / CONSTRUCT / DEDUCE<span className="bracket">]</span></>}
                     </button>
                 </div>
             </div>

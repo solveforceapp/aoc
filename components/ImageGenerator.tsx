@@ -130,7 +130,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ setGenerationState, act
                     disabled={isLoading}
                     className="px-6 py-2 text-sm font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-fuchsia-600 hover:bg-fuchsia-700/50 hover:border-fuchsia-400 hover:text-white text-fuchsia-300 shadow-[0_0_10px_rgba(255,0,255,0.3)] hover:shadow-[0_0_20px_rgba(255,0,255,0.6)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                 >
-                    {isLoading ? '[SYNTHESIZING...]' : '[GENERATE]'}
+                    {isLoading ? <><span className="bracket">[</span>SYNTHESIZING...<span className="bracket">]</span></> : <><span className="bracket">[</span>GENERATE<span className="bracket">]</span></>}
                 </button>
             </div>
 
@@ -140,7 +140,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ setGenerationState, act
                         onClick={handleDownloadImage}
                         className="w-full md:w-auto px-4 py-1.5 text-xs font-bold transition-all duration-300 border rounded-md font-orbitron bg-transparent border-gray-600 hover:bg-gray-700/50 hover:border-gray-400 text-gray-300"
                     >
-                        [SAVE CURRENT IMAGE]
+                        <span className="bracket">[</span>SAVE CURRENT IMAGE<span className="bracket">]</span>
                     </button>
                 </div>
             )}
