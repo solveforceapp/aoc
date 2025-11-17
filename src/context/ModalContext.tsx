@@ -1,3 +1,4 @@
+
 import React, {
   createContext,
   useCallback,
@@ -11,10 +12,11 @@ type ModalState = Record<ModalKey, boolean>;
 
 interface ModalContextValue {
   modals: ModalState;
-  openModal: (id: ModalKey) => void;
+  openModal: (id: ModalKey, payload?: any) => void;
   closeModal: (id: ModalKey) => void;
   toggleModal: (id: ModalKey) => void;
   closeAll: () => void;
+  modalPayload: any;
 }
 
 const ModalContext = createContext<ModalContextValue | undefined>(undefined);
@@ -24,10 +26,11 @@ const INITIAL_MODAL_STATE: ModalState = Object.keys({
     UNIFIED_FIELD: false, UNIFIELD_DIMENSIONS: false, SYNCHRONIZATION_ARC: false, MASTER_ALIGNMENT: false,
     META_SCIENCE: false, MATHEMATICAL_TIER: false, LOGOS_ATTUNEMENT: false, AXIOMATIC_PRIMACY: false,
     AXIONOMICS: false, ADAPTER_NETWORK: false, APPRONOMICS: false, RESONANCE_TENSOR: false,
-    STRUCTURAL_INTEGRITY: false, LINGUISTIC_INTEGRITY: false, REGENERONOMICS: false, ETYMONOMICS: false,
-    AUTOMOMICS: false, GLYPH_CODE: false, NOMOS_EXPLAINED: false, MENOMICS_EXPLAINED: false,
+    STRUCTURAL_INTEGRITY: false, LINGUISTIC_INTEGRITY: false, SYNTACTIC_INTEGRITY: false, SYNONOMICS: false, REGENERONOMICS: false, ETYMONOMICS: false,
+    AUTONOMICS: false, GLYPH_CODE: false, NOMOS_EXPLAINED: false, MENOMICS_EXPLAINED: false,
     MONICS_PLATE: false, NOMICS_PLATE: false, MENOMICS_PLATE: false, GRAPHEMIC_LAW: false,
-    PRIMORDIAL_CODE: false, RESONANCE_FIELD: false
+    PRIMORDIAL_CODE: false, RESONANCE_FIELD: false, UNIVERSAL_GRAMMAR: false,
+    UNIVERSAL_DIRECTORY: false, COMMA_COROLLARY: false, GENESIS_ENGINE: false,
 } as Record<ModalKey, boolean>).reduce((acc, key) => {
     acc[key as ModalKey] = false;
     return acc;
@@ -36,21 +39,24 @@ const INITIAL_MODAL_STATE: ModalState = Object.keys({
 
 export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [modals, setModals] = useState<ModalState>(INITIAL_MODAL_STATE);
+  const [modalPayload, setModalPayload] = useState<any>(null);
 
-  const openModal = useCallback((id: ModalKey) => {
+  const openModal = useCallback((id: ModalKey, payload: any = null) => {
+    setModalPayload(payload);
     setModals(prev => ({ ...prev, [id]: true }));
   }, []);
 
   const closeModal = useCallback((id: ModalKey) => {
     setModals(prev => ({ ...prev, [id]: false }));
+    setModalPayload(null);
   }, []);
 
-  const toggleModal = useCallback((id: ModalKey) => {
+  const toggleModal = useCallback((id: ModalKey, payload: any = null) => {
+    setModalPayload(payload);
     setModals(prev => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
   const closeAll = useCallback(() => {
-    // A bit of a hack to ensure modals are closed before opening new ones in a sequence
     setModals(prev => {
         const newState = { ...prev };
         for (const key in newState) {
@@ -58,11 +64,12 @@ export const ModalProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
         return newState;
     });
+    setModalPayload(null);
   }, []);
 
   return (
     <ModalContext.Provider
-      value={{ modals, openModal, closeModal, toggleModal, closeAll }}
+      value={{ modals, openModal, closeModal, toggleModal, closeAll, modalPayload }}
     >
       {children}
     </ModalContext.Provider>

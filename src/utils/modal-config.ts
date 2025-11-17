@@ -1,3 +1,4 @@
+
 import { ModalKey } from '../types';
 
 export const MODAL_CONFIG: Record<string, { text: string, profileId?: string }> = {
@@ -18,10 +19,13 @@ export const MODAL_CONFIG: Record<string, { text: string, profileId?: string }> 
     'RESONANCE_TENSOR': { text: 'TENSOR', profileId: 'spiral' },
     'LINGUISTIC_INTEGRITY': { text: 'INTEGRITY', profileId: 'grid' },
     'STRUCTURAL_INTEGRITY': { text: 'S-INTEGRITY', profileId: 'grid' },
+    'SYNTACTIC_INTEGRITY': { text: 'SYNTAX', profileId: 'grid' },
+    'SYNONOMICS': { text: 'SYNTHESIS', profileId: 'spiral' },
     'REGENERONOMICS': { text: 'REGEN', profileId: 'radial' },
     'ETYMONOMICS': { text: 'ETYMON', profileId: 'spiral' },
-    'AUTOMOMICS': { text: 'AUTOM', profileId: 'orbit' },
+    'AUTONOMICS': { text: 'AUTONOMY', profileId: 'orbit' },
     'RESONANCE_FIELD': { text: 'Ω-EXPANSION', profileId: 'turbulent' },
+    'UNIVERSAL_GRAMMAR': { text: 'GRAMMAR', profileId: 'grid' },
     'GLYPH_CODE': { text: 'GLYPHS', profileId: 'default' },
     'NOMOS_EXPLAINED': { text: 'NOMOS', profileId: 'grid' },
     'MENOMICS_EXPLAINED': { text: 'MENOMICS', profileId: 'grid' },
@@ -30,4 +34,6 @@ export const MODAL_CONFIG: Record<string, { text: string, profileId?: string }> 
     'MENOMICS_PLATE': { text: 'MENOMICS', profileId: 'grid' },
     'GRAPHEMIC_LAW': { text: 'LAW', profileId: 'grid' },
     'PRIMORDIAL_CODE': { text: 'CODE', profileId: 'turbulent' },
+    'UNIVERSAL_DIRECTORY': { text: 'DIRECTORY', profileId: 'grid' },
+    'COMMA_COROLLARY': { text: 'COROLLARY', profileId: 'turbulent' },
 };

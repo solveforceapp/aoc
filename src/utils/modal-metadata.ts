@@ -1,3 +1,4 @@
+
 import { ModalKey, ModalPhase, PolyGroup } from '../types';
 
 export interface ModalMetadata {
@@ -10,6 +11,7 @@ export const MODAL_METADATA: Record<ModalKey, ModalMetadata> = {
     // STRUCTURE (Blue-Steel) - Foundational, Core concepts
     STRUCTURAL_COHERENCE: { phase: 'STRUCTURE', polyGroup: 'CUBE', ring: 'INNER' },
     STRUCTURAL_INTEGRITY: { phase: 'STRUCTURE', polyGroup: 'ICOSAHEDRON', ring: 'INNER' },
+    SYNTACTIC_INTEGRITY: { phase: 'STRUCTURE', polyGroup: 'CUBE', ring: 'INNER' },
     AXIOMATIC_PRIMACY: { phase: 'STRUCTURE', polyGroup: 'TETRAHEDRON', ring: 'INNER' },
     MASTER_ALIGNMENT: { phase: 'STRUCTURE', polyGroup: 'ICOSITETRAGON', ring: 'INNER' },
     UNIFIED_FIELD: { phase: 'STRUCTURE', polyGroup: 'DODECAHEDRON', ring: 'OUTER' },
@@ -31,8 +33,9 @@ export const MODAL_METADATA: Record<ModalKey, ModalMetadata> = {
     META_SCIENCE: { phase: 'SYSTEM', polyGroup: 'ICOSITETRAGON', ring: 'INNER' },
     ADAPTER_NETWORK: { phase: 'SYSTEM', polyGroup: 'CUBE', ring: 'OUTER' },
     APPRONOMICS: { phase: 'SYSTEM', polyGroup: 'OCTAHEDRON', ring: 'OUTER' },
-    AUTOMOMICS: { phase: 'SYSTEM', polyGroup: 'DODECAHEDRON', ring: 'OUTER' },
+    AUTONOMICS: { phase: 'SYSTEM', polyGroup: 'DODECAHEDRON', ring: 'OUTER' },
     MATHEMATICAL_TIER: { phase: 'SYSTEM', polyGroup: 'ICOSAHEDRON', ring: 'INNER' },
+    SYNONOMICS: { phase: 'SYSTEM', polyGroup: 'DODECAHEDRON', ring: 'OUTER' },
     
     // GLYPH (Violet-Magenta) - Code, Symbols, Primitives
     GLYPH_CODE: { phase: 'GLYPH', polyGroup: 'TETRAHEDRON', ring: 'INNER' },
@@ -47,4 +50,9 @@ export const MODAL_METADATA: Record<ModalKey, ModalMetadata> = {
     GRAPHEMIC_LAW: { phase: 'GLYPH', polyGroup: 'TETRAHEDRON', ring: 'INNER' },
     PRIMORDIAL_CODE: { phase: 'GLYPH', polyGroup: 'ICOSITETRAGON', ring: 'INNER' },
     RESONANCE_FIELD: { phase: 'ENERGY', polyGroup: 'ICOSAHEDRON', ring: 'OUTER' },
+    UNIVERSAL_GRAMMAR: { phase: 'SYSTEM', polyGroup: 'ICOSITETRAGON', ring: 'INNER' },
+    UNIVERSAL_DIRECTORY: { phase: 'SYSTEM', polyGroup: 'ICOSITETRAGON', ring: 'INNER' },
+    COMMA_COROLLARY: { phase: 'SYSTEM', polyGroup: 'ICOSITETRAGON', ring: 'OUTER' },
+    // FIX: Added missing GENESIS_ENGINE modal metadata.
+    GENESIS_ENGINE: { phase: 'SYSTEM', polyGroup: 'ICOSITETRAGON', ring: 'INNER' },
 };

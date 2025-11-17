@@ -1,5 +1,6 @@
+
 import React from 'react';
-import Modal from '../../components/common/Modal';
+import Modal from './common/Modal';
 
 interface AutonomicsModalProps {
     isOpen: boolean;

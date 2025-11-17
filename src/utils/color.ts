@@ -1,8 +1,8 @@
-import { ModalKey } from '../types';
+import { ModalKey, WordSignature } from '../types';
 import { PHASE_SPECTRUM, POLYGROUP_OFFSET } from '../config/spectronomics';
 import { MODAL_METADATA } from './modal-metadata';
 
-export function getSpectralColor(modalKey: ModalKey | undefined): string {
+export function getSpectralColor(modalKey: ModalKey | undefined, wordSignature: WordSignature | null = null): string {
     if (!modalKey || !MODAL_METADATA[modalKey]) {
         // Fallback color
         return 'hsl(180, 100%, 50%)'; // Default cyan
@@ -21,6 +21,12 @@ export function getSpectralColor(modalKey: ModalKey | undefined): string {
         lightness -= 3;
     } else {
         lightness += 3;
+    }
+
+    // Modulate hue based on word signature for dynamic color feedback
+    if (wordSignature) {
+        const hueShift = (wordSignature.numericHash % 31) - 15; // Shift hue by +/- 15 degrees
+        hue = (hue + hueShift + 360) % 360;
     }
 
     // Clamp values

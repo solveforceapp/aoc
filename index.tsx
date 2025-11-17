@@ -4,6 +4,10 @@ import App from './App';
 import { ModalProvider } from './src/context/ModalContext';
 import { TextVectorProvider } from './src/context/TextVectorContext';
 import { SystemProvider } from './contexts/SystemContext';
+import { CodexProvider } from './src/context/CodexContext';
+import { ImageCodexProvider } from './src/context/ImageCodexContext';
+import { SubdomainRegistryProvider } from './src/geometronomics/subdomainRegistry';
+import { NOMICS_MANIFEST } from './src/geometronomics/nomicsManifest';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -13,12 +17,18 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <ModalProvider>
-      <SystemProvider>
-        <TextVectorProvider>
-          <App />
-        </TextVectorProvider>
-      </SystemProvider>
-    </ModalProvider>
+    <SubdomainRegistryProvider rootDomain="solveforce.com" manifest={NOMICS_MANIFEST}>
+      <ModalProvider>
+        <SystemProvider>
+          <TextVectorProvider>
+            <CodexProvider>
+              <ImageCodexProvider>
+                <App />
+              </ImageCodexProvider>
+            </CodexProvider>
+          </TextVectorProvider>
+        </SystemProvider>
+      </ModalProvider>
+    </SubdomainRegistryProvider>
   </React.StrictMode>
 );

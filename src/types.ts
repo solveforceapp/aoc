@@ -1,3 +1,5 @@
+
+
 export type ImageGenerationState = 'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR';
 
 export type VectorFieldFlowType =
@@ -40,12 +42,13 @@ export type ModalKey =
   | 'ADAPTER_NETWORK'
   | 'APPRONOMICS'
   | 'RESONANCE_TENSOR'
-  // Fix: Corrected typo from STRUCTURAL_INTEGRity to STRUCTURAL_INTEGRITY
   | 'STRUCTURAL_INTEGRITY'
   | 'LINGUISTIC_INTEGRITY'
+  | 'SYNTACTIC_INTEGRITY'
+  | 'SYNONOMICS'
   | 'REGENERONOMICS'
   | 'ETYMONOMICS'
-  | 'AUTOMOMICS'
+  | 'AUTONOMICS'
   | 'GLYPH_CODE'
   | 'NOMOS_EXPLAINED'
   | 'MENOMICS_EXPLAINED'
@@ -54,7 +57,11 @@ export type ModalKey =
   | 'MENOMICS_PLATE'
   | 'GRAPHEMIC_LAW'
   | 'PRIMORDIAL_CODE'
-  | 'RESONANCE_FIELD';
+  | 'RESONANCE_FIELD'
+  | 'UNIVERSAL_GRAMMAR'
+  | 'UNIVERSAL_DIRECTORY'
+  | 'COMMA_COROLLARY'
+  | 'GENESIS_ENGINE';
 
 export type FieldProgramStep = ModalKey | { key: ModalKey; durationMs?: number };
 
@@ -64,4 +71,34 @@ export interface FieldProgram {
   steps: FieldProgramStep[];
   createdAt?: number;
   version?: string;
+}
+
+export type WordSignature = {
+    numericHash: number;
+    charSum: number;
+    length: number;
+};
+
+export type CodexOrigin = 'Enginomics Console' | 'Hermeneutic Thesaurus' | 'Predicate Expansion' | 'Universal Grammar' | 'Image Synthesizer' | 'Genesis Engine';
+
+export interface CodexEntryRevision {
+    definition: string;
+    origin: CodexOrigin;
+    timestamp: number;
+}
+
+export interface CodexEntry {
+  id: string;
+  term: string;
+  definition: string; // The most recent definition
+  origin: CodexOrigin;
+  timestamp: number; // The most recent timestamp
+  revisions: CodexEntryRevision[]; // History of previous definitions
+}
+
+export interface ImageCodexEntry {
+  id: string;
+  prompt: string;
+  imageUrl: string; // The base64 data URL
+  timestamp: number;
 }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Architecture of Coherence</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
@@ -24,11 +24,106 @@
       ::-webkit-scrollbar-thumb:hover {
         background: #718096;
       }
+
+      .blinking-cursor {
+        display: inline-block;
+        width: 0.5em;
+        height: 1.1em;
+        background-color: #fcd34d; /* amber */
+        animation: blink 1s step-end infinite;
+        vertical-align: bottom;
+        margin-left: 2px;
+      }
+      @keyframes blink {
+        from, to { background-color: transparent; }
+        50% { background-color: #fcd34d; }
+      }
+
+      /* Main App Layout Styles */
+      .app-container {
+        position: relative;
+        width: 100vw;
+        min-height: 100vh;
+        color: #e5e7eb; /* text-gray-200 */
+        font-family: 'Roboto', sans-serif;
+      }
+      .overlay-grid {
+        position: relative;
+        display: grid;
+        grid-template-rows: auto;
+        gap: 1rem;
+        padding: 1rem;
+        transition: opacity 0.5s ease;
+      }
+      .top-bar {
+        grid-row: 1 / 2;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 20;
+      }
+      .panels-grid {
+        grid-row: 2 / 3;
+        display: grid;
+        grid-template-columns: 1.3fr 1.2fr 1.5fr;
+        gap: 1rem;
+        z-index: 10;
+        pointer-events: none; /* Let clicks pass through grid to canvas */
+      }
+      .panels-grid > * {
+        pointer-events: auto; /* Re-enable pointer events for children */
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .panels-grid > *::-webkit-scrollbar {
+        width: 6px;
+      }
+      .panels-grid > *::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .panels-grid > *::-webkit-scrollbar-thumb {
+        background: #4a5568;
+        border-radius: 3px;
+      }
+      .focus-mode {
+        opacity: 0;
+        pointer-events: none;
+      }
     </style>
     <script>
       tailwind.config = {
         theme: {
           extend: {
+            typography: (theme) => ({
+              DEFAULT: {
+                css: {
+                  'h1, h2, h3, h4, h5, h6': {
+                    fontFamily: theme('fontFamily.orbitron').join(', '),
+                  },
+                },
+              },
+              invert: {
+                css: {
+                    '--tw-prose-body': theme('colors.gray[300]'),
+                    '--tw-prose-headings': theme('colors.amber[300]'),
+                    '--tw-prose-lead': theme('colors.gray[400]'),
+                    '--tw-prose-links': theme('colors.amber[400]'),
+                    '--tw-prose-bold': theme('colors.white'),
+                    '--tw-prose-counters': theme('colors.gray[400]'),
+                    '--tw-prose-bullets': theme('colors.amber[500]'),
+                    '--tw-prose-hr': theme('colors.gray[700]'),
+                    '--tw-prose-quotes': theme('colors.gray[200]'),
+                    '--tw-prose-quote-borders': theme('colors.gray[600]'),
+                    '--tw-prose-captions': theme('colors.gray[400]'),
+                    '--tw-prose-code': theme('colors.cyan[300]'),
+                    '--tw-prose-pre-code': theme('colors.cyan[300]'),
+                    '--tw-prose-pre-bg': 'rgba(0, 0, 0, 0.3)',
+                    '--tw-prose-th-borders': theme('colors.gray[600]'),
+                    '--tw-prose-td-borders': theme('colors.gray[700]'),
+                }
+              }
+            }),
             fontFamily: {
               'orbitron': ['Orbitron', 'sans-serif'],
               'sans': ['Roboto', 'sans-serif'],
@@ -39,6 +134,8 @@
               'pulse-glow-cyan': 'pulseGlowCyan 3s infinite ease-in-out',
               'pulse-glow-fuchsia': 'pulseGlowFuchsia 3s infinite ease-in-out',
               'pulse-glow-amber': 'pulseGlowAmber 3s infinite ease-in-out',
+              'flash-in': 'flashIn 1.5s ease-out forwards',
+              'border-glow-amber': 'borderGlowAmber 2s ease-in-out forwards',
             },
             keyframes: {
               fadeIn: {
@@ -61,9 +158,17 @@
                 '0%, 100%': { boxShadow: '0 0 15px rgba(255, 193, 7, 0.3), 0 0 5px rgba(255, 193, 7, 0.5) inset' },
                 '50%': { boxShadow: '0 0 25px rgba(255, 193, 7, 0.6), 0 0 8px rgba(255, 193, 7, 0.7) inset' },
               },
+              flashIn: {
+                '0%': { backgroundColor: 'rgba(251, 191, 36, 0.7)' },
+                '100%': { backgroundColor: 'transparent' },
+              },
+              borderGlowAmber: {
+                '0%, 100%': { borderColor: 'rgb(55 65 81)', boxShadow: 'none' },
+                '50%': { borderColor: '#fcd34d', boxShadow: '0 0 20px rgba(251, 191, 36, 0.6)' },
+              },
             }
           }
-        }
+        },
       }
     </script>
   <script type="importmap">
@@ -72,6 +177,7 @@
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "react": "https://aistudiocdn.com/react@^19.2.0",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
   }
 }

@@ -450,12 +450,48 @@
  *    The economy of magnetism, spin, and alignment. The law of coherent
  *    phase-locking and directional fields.
  *
+ * ──────────────────────────────────────────────────────────────────────────────
+ *  NOMIC CONSTELLATION CODEX – VOLUME V
+ *  Synthesis, Synonymy, and Antinomy
+ * ──────────────────────────────────────────────────────────────────────────────
+ *
+ *  This volume defines the laws of conceptual relation, governing how ideas are
+ *  unified, contrasted, and explored within the semantic field.
+ *
+ *  • SYNONOMICS:
+ *    The economy of synthesis and relation. It governs the exploration of
+ *    conceptual space through synonyms (resonance) and antonyms (dissonance).
+ *    Synonomics is the active principle behind the Hermeneutic Thesaurus,
+ *    positing that a concept's true meaning is defined not only by what it is,
+ *    but by what it is like and what it is not. It is the law of "collective
+ *    wisdom," enabling the synthesis of new principles from existing ones.
+ *
  */
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { WordSignature } from '../src/types';
 
 export type ActiveSelection = {
     type: 'concept' | 'unit';
     text: string;
+};
+
+export type SystemStatus = 'IDLE' | 'SYNTHESIZING' | 'COMMUNICATING' | 'ERROR';
+
+// Simple hashing function (djb2) for creating a numeric signature from text.
+const computeNumericHash = (text: string): number => {
+    let hash = 5381;
+    for (let i = 0; i < text.length; i++) {
+        hash = (hash * 33) ^ text.charCodeAt(i);
+    }
+    return hash >>> 0; // Ensure positive integer
+};
+
+export const computeWordSignature = (text: string): WordSignature => {
+    return {
+        numericHash: computeNumericHash(text),
+        charSum: text.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0),
+        length: text.length,
+    };
 };
 
 /**
@@ -472,12 +508,12 @@ interface SystemContextType {
     setActiveSelection: React.Dispatch<React.SetStateAction<ActiveSelection>>;
 
     /**
-     * The specific string currently being rendered by the VectorField visualization.
-     * This is often a shorthand or a keyword related to the main `text`.
-     * e.g., "COHERENCE", "GLYPHS"
+     * The primary concept currently in focus across the entire application.
+     * This drives the vector field, seeds the generative consoles, and provides
+     * context for various components. e.g., "COHERENCE", "SYMMETRY"
      */
-    visualizedText: string;
-    setVisualizedText: React.Dispatch<React.SetStateAction<string>>;
+    activeConcept: string;
+    setActiveConcept: React.Dispatch<React.SetStateAction<string>>;
 
     /**
      * The general subject or topic of focus for the application.
@@ -486,6 +522,19 @@ interface SystemContextType {
      */
     text: string;
     setText: React.Dispatch<React.SetStateAction<string>>;
+
+    /**
+     * A computed signature of the `activeConcept`, containing numeric properties
+     * that can be used to deterministically influence other system components.
+     */
+    wordSignature: WordSignature | null;
+
+    /**
+     * Represents the global status of system activity, particularly for
+     * asynchronous or generative operations.
+     */
+    systemStatus: SystemStatus;
+    setSystemStatus: React.Dispatch<React.SetStateAction<SystemStatus>>;
 }
 
 const SystemContext = createContext<SystemContextType | undefined>(undefined);
@@ -496,11 +545,22 @@ const SystemContext = createContext<SystemContextType | undefined>(undefined);
  */
 export const SystemProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [activeSelection, setActiveSelection] = useState<ActiveSelection>({ type: 'concept', text: 'we' });
-    const [visualizedText, setVisualizedText] = useState('COHERENCE');
+    const [activeConcept, setActiveConcept] = useState('COHERENCE');
     const [text, setText] = useState<string>('A Unified White Paper on Axionomics, Language Unit Architecture, Weaponomics, and Appronomics');
+    const [wordSignature, setWordSignature] = useState<WordSignature | null>(null);
+    const [systemStatus, setSystemStatus] = useState<SystemStatus>('IDLE');
+
+
+    useEffect(() => {
+        if (activeConcept && activeConcept.length > 0) {
+            setWordSignature(computeWordSignature(activeConcept));
+        } else {
+            setWordSignature(null);
+        }
+    }, [activeConcept]);
 
     return (
-        <SystemContext.Provider value={{ activeSelection, setActiveSelection, visualizedText, setVisualizedText, text, setText }}>
+        <SystemContext.Provider value={{ activeSelection, setActiveSelection, activeConcept, setActiveConcept, text, setText, wordSignature, systemStatus, setSystemStatus }}>
             {children}
         </SystemContext.Provider>
     );

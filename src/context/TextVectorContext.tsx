@@ -12,8 +12,8 @@ import { useSystemContext } from '../../contexts/SystemContext';
 export type CycleState = 'IDLE' | 'DISINTEGRATING' | 'REINTEGRATING';
 
 export interface TextVectorContextValue {
-  visualizedText: string;
-  setVisualizedText: (value: string) => void;
+  activeConcept: string;
+  setActiveConcept: (value: string) => void;
   cycleState: CycleState;
   setCycleState: (state: CycleState) => void;
   geometry: GeometrySignature;
@@ -28,23 +28,23 @@ const TextVectorContext = createContext<TextVectorContextValue | undefined>(
 export const TextVectorProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const { visualizedText, setVisualizedText } = useSystemContext();
+  const { activeConcept, setActiveConcept } = useSystemContext();
   const [cycleState, setCycleState] = useState<CycleState>('IDLE');
   const [dimension, setDimension] = useState<Dimension>(2);
 
   const geometry = useMemo(
     () =>
       getGeometrySignature({
-        textLength: visualizedText.length || 1,
+        textLength: activeConcept.length || 1,
         dimension,
         preferPolygram: true,
       }),
-    [visualizedText.length, dimension]
+    [activeConcept.length, dimension]
   );
 
   const value: TextVectorContextValue = {
-    visualizedText,
-    setVisualizedText,
+    activeConcept,
+    setActiveConcept,
     cycleState,
     setCycleState,
     geometry,

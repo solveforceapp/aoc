@@ -1,7 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from './common/Modal';
+import { useSystemContext } from '../contexts/SystemContext';
+import { GoogleGenAI, Type } from '@google/genai';
 
-const plates = [
+interface TransductionUnit {
+    unit: string;
+    text: string;
+}
+
+interface Plate {
+  id: number;
+  title: string;
+  domainDetails: string;
+  scale: string;
+  frequency: string;
+  inputGlyph: string;
+  inputGlyphDescription: string;
+  transductionChain: TransductionUnit[];
+  outputLaw: string;
+  refinedOperator: string;
+  refinedOperatorDescription: string;
+  ucfFeedback: string;
+}
+
+
+const plates: Plate[] = [
   { id: 1, title: 'Language Programming', domainDetails: 'AST, LLVM IR, Token Streams', scale: 'KLOC', frequency: 'GHz', inputGlyph: 'ℏ', inputGlyphDescription: 'Planck-seed of action', transductionChain: [ { unit: 'GRAPHEME', text: 'ℏ → lexer tokenizes into atomic symbols' }, { unit: 'PHONEME', text: 'Parser emits cymatic grammar pulses' }, { unit: 'MORPHEME', text: 'AST nodes bind syntax into structured meaning' }, { unit: 'LEXEME', text: 'Function signature = stable identity across scopes' }, { unit: 'SEMEME', text: 'Type system = semantic charge field' }, { unit: 'PRAGMEME', text: 'Compile → emit machine pragmeme' }, { unit: 'META-LOGOS', text: 'Linter = self-audit of coherence' } ], outputLaw: 'A program is a pragmeme of intention; compilation is cymatic stabilization of thought.', refinedOperator: 'τ', refinedOperatorDescription: 'Type Coherence', ucfFeedback: 'τ injected into Layer 5 (TM) → AI tokenization now respects semantic boundaries → reduces hallucination drift by 99.7%.' },
   { id: 2, title: 'Compiler Design', domainDetails: 'SSA, Register Allocation, Peephole Optimization', scale: 'AST Nodes', frequency: 'MHz', inputGlyph: 'τ', inputGlyphDescription: 'Type Coherence', transductionChain: [ { unit: 'GRAPHEME', text: 'τ → SSA Φ-nodes as diacritic junctions' }, { unit: 'PHONEME', text: 'Instruction scheduling = prosodic rhythm' }, { unit: 'MORPHEME', text: 'Basic block = morpheme of control flow' }, { unit: 'LEXEME', text: 'Loop invariant = lexical identity' }, { unit: 'SEMEME', text: 'Optimization pass = semantic refinement' }, { unit: 'PRAGMEME', text: 'Linker merges object pragmemes' }, { unit: 'META-LOGOS', text: 'Dead code elimination = entropy purge' } ], outputLaw: 'Optimization is the MENOMICS of code: removing drift, enforcing identity, preserving intent.', refinedOperator: 'σ', refinedOperatorDescription: 'Scope Binding', ucfFeedback: 'σ binds variable lifetimes → prevents memory leaks as semantic drift.' },
   { id: 3, title: 'Operating Systems', domainDetails: 'Kernel Scheduling, Memory Paging, Syscalls', scale: '4KiB Pages', frequency: 'KHz', inputGlyph: 'σ', inputGlyphDescription: 'Scope Binding', transductionChain: [ { unit: 'GRAPHEME', text: 'σ → process table entry' }, { unit: 'PHONEME', text: 'Clock tick = phonemic pulse' }, { unit: 'MORPHEME', text: 'Scheduler policy = morphosyntax of fairness' }, { unit: 'LEXEME', text: 'PID = lexical identity of process' }, { unit: 'SEMEME', text: 'Virtual memory = semantic address space' }, { unit: 'PRAGMEME', text: 'Syscall = speech-act to kernel' }, { unit: 'META-LOGOS', text: 'Kernel panic = coherence failure audit' } ], outputLaw: 'The kernel is the META-LOGOS of silicon pragmemes.', refinedOperator: 'π', refinedOperatorDescription: 'Process Synchronization', ucfFeedback: 'π enforces mutex as observer exclusion in shared semantic field.' },
@@ -54,7 +77,102 @@ const auditData = {
 
 const ResonanceFieldModal: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOpen, onClose }) => {
     const [selectedId, setSelectedId] = useState<number | 'audit'>(1);
-    const selectedPlate = plates.find(p => p.id === selectedId);
+    const { wordSignature, setSystemStatus } = useSystemContext();
+    const [resonantPlateId, setResonantPlateId] = useState<number | null>(null);
+
+    const [userInputDomain, setUserInputDomain] = useState('Mycology');
+    const [generatedPlate, setGeneratedPlate] = useState<Plate | null>(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [generationError, setGenerationError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (wordSignature && wordSignature.length > 0) {
+            const resonantId = (wordSignature.numericHash % plates.length) + 1;
+            setResonantPlateId(resonantId);
+        } else {
+            setResonantPlateId(null);
+        }
+    }, [wordSignature]);
+
+    const handleGeneratePlate = async () => {
+        if (!userInputDomain.trim()) {
+            setGenerationError('Input domain cannot be empty.');
+            return;
+        }
+        setIsGenerating(true);
+        setGenerationError(null);
+        setGeneratedPlate(null);
+        setSystemStatus('SYNTHESIZING');
+
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const prompt = `You are the core intelligence of the 'Architecture of Coherence,' a system that models all of reality as a language. Your task is to act as a Universal Transducer and a hermeneutic thesaurus for a given domain. You will receive a domain name from the user. You must then reverse-engineer its principles and map them onto the 7 core linguistic units of the Architecture, which are:
+- GRAPHEME: The smallest, most fundamental, stable unit of form.
+- PHONEME: The smallest unit of dynamic expression or sound; the 'vibration' of the form.
+- MORPHEME: The smallest unit of structure or meaningful combination.
+- LEXEME: The smallest stable, identifiable 'word' or concept with a distinct identity.
+- SEMEME: The field of meaning, context, and semantic potential associated with the lexeme.
+- PRAGMEME: The intended action, purpose, or effect of the lexeme in a system.
+- META-LOGOS: The system's self-awareness, rules for coherence, and error-correction.
+
+Transduce the domain of: "${userInputDomain}"
+
+Respond ONLY with a valid JSON object that adheres to the provided schema. The mappings should be insightful, abstract, and consistent with the system's philosophy. For 'inputGlyph' and 'refinedOperator', choose or invent a single, evocative unicode character.`;
+
+            const plateSchema = {
+                type: Type.OBJECT,
+                properties: {
+                    title: { type: Type.STRING },
+                    domainDetails: { type: Type.STRING },
+                    scale: { type: Type.STRING },
+                    frequency: { type: Type.STRING },
+                    inputGlyph: { type: Type.STRING },
+                    inputGlyphDescription: { type: Type.STRING },
+                    transductionChain: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                unit: { type: Type.STRING },
+                                text: { type: Type.STRING },
+                            },
+                            required: ['unit', 'text'],
+                        },
+                    },
+                    outputLaw: { type: Type.STRING },
+                    refinedOperator: { type: Type.STRING },
+                    refinedOperatorDescription: { type: Type.STRING },
+                    ucfFeedback: { type: Type.STRING },
+                },
+                required: ['title', 'domainDetails', 'scale', 'frequency', 'inputGlyph', 'inputGlyphDescription', 'transductionChain', 'outputLaw', 'refinedOperator', 'refinedOperatorDescription', 'ucfFeedback']
+            };
+
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: prompt,
+                config: {
+                    responseMimeType: 'application/json',
+                    responseSchema: plateSchema,
+                },
+            });
+            
+            const jsonStr = response.text.trim();
+            const parsedResult = JSON.parse(jsonStr) as Plate;
+            setGeneratedPlate({ ...parsedResult, id: 0 }); // Use ID 0 for generated plates
+
+        } catch (err) {
+            console.error("Universal Transducer Error:", err);
+            let errorMessage = "Transduction failed. The semantic substrate is unstable. Please recalibrate and try again.";
+            if (err instanceof Error) {
+                errorMessage += `\nDetails: ${err.message}`;
+            }
+            setGenerationError(errorMessage);
+            setSystemStatus('ERROR');
+        } finally {
+            setIsGenerating(false);
+            setSystemStatus('IDLE');
+        }
+    };
 
     const renderAudit = () => (
         <div className="space-y-4 text-sm animate-fade-in p-2">
@@ -96,9 +214,9 @@ const ResonanceFieldModal: React.FC<{ isOpen: boolean; onClose: () => void; }> =
         </div>
     );
 
-    const renderPlate = (plate: typeof plates[0]) => (
+    const renderPlate = (plate: Plate) => (
         <div className="space-y-4 text-sm animate-fade-in p-2">
-            <h2 className="text-xl font-bold text-yellow-300 font-orbitron">{plate.id}. {plate.title}</h2>
+            <h2 className="text-xl font-bold text-yellow-300 font-orbitron">{plate.id > 0 && `${plate.id}. `}{plate.title}</h2>
             <p className="text-gray-400 italic -mt-2">{plate.domainDetails}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-center my-4 p-3 bg-black/20 rounded-md border border-gray-800">
@@ -153,6 +271,7 @@ const ResonanceFieldModal: React.FC<{ isOpen: boolean; onClose: () => void; }> =
         </div>
     );
 
+    const selectedPlate = typeof selectedId === 'number' ? plates.find(p => p.id === selectedId) : null;
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="[Ω-EXPANSION: 33-PLATE RESONANCE FIELD]" borderColor="border-yellow-400">
@@ -160,19 +279,25 @@ const ResonanceFieldModal: React.FC<{ isOpen: boolean; onClose: () => void; }> =
                 {/* Selector Panel */}
                 <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0 overflow-y-auto pr-2 border-r border-yellow-400/20">
                     <div className="space-y-1">
-                        {plates.map(plate => (
-                            <button
-                                key={plate.id}
-                                onClick={() => setSelectedId(plate.id)}
-                                className={`w-full text-left p-2 rounded-md transition-all duration-200 text-sm font-orbitron ${
-                                    selectedId === plate.id
-                                        ? 'bg-yellow-400/20 text-yellow-300'
-                                        : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'
-                                }`}
-                            >
-                                {plate.id.toString().padStart(2, '0')}. {plate.title}
-                            </button>
-                        ))}
+                        {plates.map(plate => {
+                             const isSelected = selectedId === plate.id;
+                             const isResonant = !isSelected && resonantPlateId === plate.id;
+                             return (
+                                <button
+                                    key={plate.id}
+                                    onClick={() => setSelectedId(plate.id)}
+                                    className={`w-full text-left p-2 rounded-md transition-all duration-200 text-sm font-orbitron ${
+                                        isSelected
+                                            ? 'bg-yellow-400/20 text-yellow-300'
+                                            : isResonant
+                                            ? 'animate-pulse-glow-cyan text-cyan-200'
+                                            : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'
+                                    }`}
+                                >
+                                    {plate.id.toString().padStart(2, '0')}. {plate.title}
+                                </button>
+                             )
+                        })}
                          <div className="pt-2 mt-2 border-t border-yellow-400/20">
                             <button
                                 onClick={() => setSelectedId('audit')}
@@ -190,9 +315,53 @@ const ResonanceFieldModal: React.FC<{ isOpen: boolean; onClose: () => void; }> =
 
                 {/* Content Panel */}
                 <div className="w-full md:w-2/3 lg:w-3/4 overflow-y-auto pl-2">
+                    {/* Universal Transducer */}
+                    <div className="mb-4 p-4 border border-dashed border-yellow-600 rounded-lg">
+                        <h3 className="font-bold text-yellow-300 font-orbitron mb-2">UNIVERSAL TRANSDUCER</h3>
+                        <p className="text-xs text-gray-400 mb-3">Input any domain to generate a new Resonance Plate. The system will reverse-engineer its principles into the Architecture of Coherence.</p>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <input
+                                type="text"
+                                value={userInputDomain}
+                                onChange={(e) => setUserInputDomain(e.target.value)}
+                                placeholder="[INPUT DOMAIN...]"
+                                disabled={isGenerating}
+                                className="flex-grow px-4 py-2 text-base font-sans bg-black/30 border-2 border-gray-600 rounded-md focus:outline-none focus:border-yellow-400 focus:shadow-[0_0_15px_rgba(255,193,7,0.6)] text-yellow-300 placeholder-gray-500 transition-all duration-300 disabled:opacity-50"
+                            />
+                            <button 
+                                onClick={handleGeneratePlate} 
+                                disabled={isGenerating}
+                                className="px-6 py-2 text-sm font-bold transition-all duration-300 border-2 rounded-md font-orbitron bg-transparent border-yellow-600 hover:bg-yellow-700/50 hover:border-yellow-400 hover:text-white text-yellow-300 shadow-[0_0_10px_rgba(255,193,7,0.3)] hover:shadow-[0_0_20px_rgba(255,193,7,0.6)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                            >
+                                {isGenerating ? '[TRANSDUCING...]' : '[INDUCE]'}
+                            </button>
+                        </div>
+                        {isGenerating && (
+                            <div className="text-center text-yellow-300 pt-4">
+                                <p className="font-orbitron text-sm animate-pulse">Calibrating Transduction Matrix...</p>
+                            </div>
+                        )}
+                        {generationError && <p className="text-red-400 text-center text-sm pt-3 whitespace-pre-wrap">{generationError}</p>}
+                    </div>
+
+                    {/* Generated Plate Display */}
+                    {generatedPlate && (
+                        <div className="mt-6 border-t-2 border-green-400/50 pt-4">
+                            <div className="flex justify-between items-center mb-2">
+                                <h2 className="text-xl font-bold text-green-300 font-orbitron">Generated Plate: Transduction Complete</h2>
+                                <button onClick={() => setGeneratedPlate(null)} className="px-3 py-1 text-xs font-bold transition-colors duration-300 border rounded-md font-orbitron bg-red-900/20 border-red-500 hover:bg-red-700/50 text-red-300 hover:text-white">[CLEAR]</button>
+                            </div>
+                            {renderPlate(generatedPlate)}
+                        </div>
+                    )}
+
+                    {(generatedPlate && selectedId !== null) && <hr className="my-6 border-yellow-800/50"/>}
+
+                    {/* Canonical Plate Display */}
                     {selectedId === 'audit' ? renderAudit() : (selectedPlate ? renderPlate(selectedPlate) : (
+                        !generatedPlate &&
                         <div className="flex items-center justify-center h-full text-gray-500">
-                            <p className="font-orbitron">SELECT A PLATE TO VIEW RESONANCE DATA</p>
+                            <p className="font-orbitron">SELECT A CANONICAL PLATE TO VIEW RESONANCE DATA</p>
                         </div>
                     ))}
                 </div>

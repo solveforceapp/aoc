@@ -1,10 +1,12 @@
-import { RefObject, useEffect, useRef } from 'react';
+import { RefObject, useEffect, useRef, useState } from 'react';
 import { CycleState } from '../src/context/TextVectorContext';
 import { GeometrySignature } from '../src/geometry/types';
 import { MODAL_CONFIG } from '../src/utils/modal-config';
 import { PROFILES } from '../src/utils/vector-field-profiles';
-import { ModalKey, VectorFieldProfile } from '../src/types';
+import { ModalKey, VectorFieldProfile, WordSignature } from '../src/types';
 import { getSpectralColor } from '../src/utils/color';
+import { useSystemContext } from '../contexts/SystemContext';
+import { useModal } from '../src/context/ModalContext';
 
 interface UseVectorFieldParams {
   canvasRef: RefObject<HTMLCanvasElement>;
@@ -32,6 +34,10 @@ export function useVectorField({
 }: UseVectorFieldParams) {
   const animationRef = useRef<number | null>(null);
   const particlesRef = useRef<Particle[]>([]);
+  const { wordSignature, systemStatus, setActiveConcept } = useSystemContext();
+  const { openModal } = useModal();
+  const [hoveredVertex, setHoveredVertex] = useState<number | null>(null);
+  const polygonVerticesRef = useRef<{ x: number; y: number }[]>([]);
 
   const computeFieldVelocity = (
     x: number,
@@ -106,14 +112,51 @@ export function useVectorField({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const handleMouseMove = (e: MouseEvent) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        let foundVertex: number | null = null;
+        if (polygonVerticesRef.current.length > 0) {
+            for (let i = 0; i < polygonVerticesRef.current.length; i++) {
+                const v = polygonVerticesRef.current[i];
+                const dx = v.x - mouseX;
+                const dy = v.y - mouseY;
+                if (Math.sqrt(dx * dx + dy * dy) < 12) { // 12px hover radius
+                    foundVertex = i;
+                    break;
+                }
+            }
+        }
+        setHoveredVertex(foundVertex);
+    };
+
+    const handleClick = () => {
+        if (hoveredVertex !== null) {
+            const modalKeys = Object.keys(MODAL_CONFIG) as ModalKey[];
+            const modalToOpen = modalKeys[hoveredVertex % modalKeys.length];
+            if (modalToOpen) {
+                setActiveConcept(MODAL_CONFIG[modalToOpen].text);
+                openModal(modalToOpen);
+            }
+        }
+    };
+    
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('click', handleClick);
+
     let frame = 0;
 
     const initParticles = () => {
+        const dpr = window.devicePixelRatio || 1;
+        const width = canvas.width / dpr;
+        const height = canvas.height / dpr;
         const newParticles: Particle[] = [];
         for (let i = 0; i < PARTICLE_COUNT; i++) {
             newParticles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
+                x: Math.random() * width,
+                y: Math.random() * height,
                 vx: 0, vy: 0,
                 age: 0,
                 life: Math.random() * 200 + 50,
@@ -128,13 +171,37 @@ export function useVectorField({
     const draw = () => {
       frame++;
       
-      const key = Object.keys(MODAL_CONFIG).find(k => MODAL_CONFIG[k].text === text) as ModalKey | undefined;
-      const profileId = key ? MODAL_CONFIG[key].profileId : 'default';
-      const profile = PROFILES[profileId || 'default'] || PROFILES['default'];
-      const spectralColor = getSpectralColor(key);
+      let profile: VectorFieldProfile;
 
-      const width = canvas.width;
-      const height = canvas.height;
+      // System status override takes highest priority for System Awareness.
+      if (systemStatus === 'SYNTHESIZING') {
+          profile = PROFILES['turbulent'];
+      } else if (systemStatus === 'COMMUNICATING') {
+          profile = PROFILES['spiral'];
+      } else {
+          // Original logic based on active text concept
+          const key = Object.keys(MODAL_CONFIG).find(k => MODAL_CONFIG[k].text === text) as ModalKey | undefined;
+          
+          if (key && MODAL_CONFIG[key].profileId) {
+              profile = PROFILES[MODAL_CONFIG[key].profileId!] || PROFILES['default'];
+          } 
+          else if (wordSignature) {
+              const profileKeys = Object.keys(PROFILES);
+              const profileIndex = wordSignature.charSum % profileKeys.length;
+              const profileId = profileKeys[profileIndex];
+              profile = PROFILES[profileId];
+          } 
+          else {
+              profile = PROFILES['default'];
+          }
+      }
+      
+      const key = Object.keys(MODAL_CONFIG).find(k => MODAL_CONFIG[k].text === text) as ModalKey | undefined;
+      const spectralColor = getSpectralColor(key, wordSignature);
+
+      const dpr = window.devicePixelRatio || 1;
+      const width = canvas.width / dpr;
+      const height = canvas.height / dpr;
 
       // Fading effect for trails
       ctx.globalCompositeOperation = 'source-over';
@@ -147,25 +214,54 @@ export function useVectorField({
        const wobble = Math.sin(frame * 0.01 + charSum * 0.001) * 0.05;
 
        ctx.save();
-       ctx.translate(width / 2, height / 2);
        if (geometry.polygon) {
          const sides = geometry.polygon.sides;
          const angleStep = (Math.PI * 2) / sides;
          ctx.beginPath();
+         const canvasVertices: {x:number, y:number}[] = [];
          for (let i = 0; i < sides; i++) {
            const angle = i * angleStep + wobble;
            const r = baseRadius * (1 + 0.1 * Math.sin(frame * 0.03 + i));
-           const x = r * Math.cos(angle);
-           const y = r * Math.sin(angle);
+           const x = width / 2 + r * Math.cos(angle);
+           const y = height / 2 + r * Math.sin(angle);
+           canvasVertices.push({ x, y });
            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
          }
+         polygonVerticesRef.current = canvasVertices;
          ctx.closePath();
          ctx.strokeStyle = spectralColor.replace('hsl', 'hsla').replace(')', ', 0.1)');
          ctx.lineWidth = 1;
          ctx.stroke();
+       } else {
+           polygonVerticesRef.current = [];
        }
        ctx.restore();
+       
+       // Draw hover highlights
+       if (hoveredVertex !== null && polygonVerticesRef.current[hoveredVertex]) {
+           const v = polygonVerticesRef.current[hoveredVertex];
+           const modalKeys = Object.keys(MODAL_CONFIG) as ModalKey[];
+           const modalToOpen = modalKeys[hoveredVertex % modalKeys.length];
+           const conceptText = MODAL_CONFIG[modalToOpen]?.text || '';
+           
+           ctx.save();
+           // Draw a circle highlight
+           ctx.beginPath();
+           ctx.arc(v.x, v.y, 12, 0, Math.PI * 2);
+           ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+           ctx.fill();
+           ctx.strokeStyle = spectralColor.replace('hsl', 'hsla').replace(')', ', 0.8)');
+           ctx.lineWidth = 2;
+           ctx.stroke();
 
+           // Draw text label
+           ctx.fillStyle = 'white';
+           ctx.font = '12px Orbitron';
+           ctx.textAlign = 'center';
+           ctx.textBaseline = 'bottom';
+           ctx.fillText(conceptText, v.x, v.y - 15);
+           ctx.restore();
+       }
 
       // Update and draw particles
       particlesRef.current.forEach(p => {
@@ -197,11 +293,10 @@ export function useVectorField({
       if (animationRef.current != null) {
         cancelAnimationFrame(animationRef.current);
       }
+      canvas.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('click', handleClick);
     };
-  // We intentionally leave out `text` and `geometry` from deps to avoid re-initializing particles on every text change.
-  // The active profile and geometry are read inside the animation frame, making it dynamic anyway.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvasRef, cycleState]);
+  }, [canvasRef, cycleState, text, geometry, wordSignature, systemStatus, setActiveConcept, openModal, hoveredVertex]);
 
   const triggerAnnihilationReintegrationCycle = (
     setCycleState: (s: CycleState) => void

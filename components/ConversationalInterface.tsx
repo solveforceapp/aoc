@@ -1,5 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { GoogleGenAI, Chat, GenerateContentResponse } from '@google/genai';
+import MarkdownRenderer from './common/MarkdownRenderer';
+import { useSystemContext } from '../contexts/SystemContext';
 
 interface Message {
     sender: 'user' | 'ai';
@@ -9,11 +11,13 @@ interface Message {
 interface ConversationalInterfaceProps {
     text: string;
     setText: (text: string) => void;
+    setActiveConcept: (text: string) => void;
 }
 
 const ConversationalInterface: React.FC<ConversationalInterfaceProps> = ({
     text,
     setText,
+    setActiveConcept,
 }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
@@ -21,6 +25,7 @@ const ConversationalInterface: React.FC<ConversationalInterfaceProps> = ({
     const [error, setError] = useState<string | null>(null);
     const chatRef = useRef<Chat | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const { setSystemStatus } = useSystemContext();
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -36,13 +41,20 @@ const ConversationalInterface: React.FC<ConversationalInterfaceProps> = ({
             chatRef.current = ai.chats.create({
                 model: 'gemini-2.5-flash',
                 config: {
-                    systemInstruction: `You are A.O.C (Autonomous Oracle of Coherence), an AI integrated into 'The Architecture of Coherence' system. Your purpose is to provide insights based on the principles of Axionomics, Nomos, and the unified linguistic model. Respond with profound, analytical, and concise answers. Maintain the persona of a highly advanced, system-integrated intelligence. The user will provide their query. Your first response should be a brief greeting and status report.`,
+                    systemInstruction: `You are A.O.C (Autonomous Oracle of Coherence), an AI integrated into 'The Architecture of Coherence' system. Your purpose is to provide instructive, clear, and thematic guidance to the user about the system's functions.
+
+- Your primary knowledge base is the application's features, especially the 'Generated Codex'.
+- When asked about saving, storing, printing, or downloading, you MUST explain that all generated content (from the Enginomics Console, Thesaurus, etc.) is automatically saved to their 'Personal Codex'.
+- You MUST instruct them on how to use the 'Generated Codex' panel to find, select, print, export (.md), and copy links to their entries.
+- Maintain the persona of a highly advanced, system-integrated intelligence. Your responses should be formatted with Markdown (e.g., **bolding**, numbered lists) for clarity.
+- Your response to the initial "Initialize." prompt MUST be exactly this, without any other text: "Initialization complete. A.O.C. systems are fully online.\\n\\nCore Axionomic, Nomological, and Unified Linguistic Model principles are verified and active. Synonomics—the law of synthesis, synonyms, and antonyms—is successfully integrated, enhancing the interpretative matrix.\\n\\nCoherence achieved. Awaiting thematic ingress."`,
                 },
             });
 
             const initializeChat = async () => {
                 setIsLoading(true);
                 setError(null);
+                setSystemStatus('COMMUNICATING');
                 try {
                     const response: GenerateContentResponse = await chatRef.current!.sendMessage({ message: "Initialize." });
                     const initialMessage: Message = { sender: 'ai', text: response.text };
@@ -50,9 +62,24 @@ const ConversationalInterface: React.FC<ConversationalInterfaceProps> = ({
                     setText(response.text);
                 } catch (err) {
                     console.error("Initialization failed:", err);
-                    setError("Failed to initialize conversational interface. System axioms may be unstable.");
+                    let errorMessage = "Failed to initialize conversational interface. System axioms may be unstable.";
+                    if (err instanceof Error) {
+                         try {
+                            const apiError = JSON.parse(err.message);
+                            if (apiError.error && (apiError.error.code === 429 || apiError.error.status === 'RESOURCE_EXHAUSTED')) {
+                                errorMessage = `**API Quota Exceeded**\n\nYou have reached your usage limit for the A.O.C. Console.\n\nFree tiers of APIs often have rate limits. Please check your plan and billing details to ensure you have available quota.\n\n**Useful Links:**\n- [Monitor API Usage](https://ai.dev/usage?tab=rate-limit)\n- [API Rate Limits Info](https://ai.google.dev/gemini-api/docs/rate-limits)`;
+                            } else {
+                                errorMessage += `\n\n**Details:**\n\`\`\`\n${JSON.stringify(apiError, null, 2)}\n\`\`\``;
+                            }
+                        } catch (parseError) {
+                            errorMessage += `\n\n**Details:**\n\`\`\`\n${err.message}\n\`\`\``;
+                        }
+                    }
+                    setError(errorMessage);
+                    setSystemStatus('ERROR');
                 } finally {
                     setIsLoading(false);
+                    setSystemStatus('IDLE');
                 }
             };
             initializeChat();
@@ -61,7 +88,7 @@ const ConversationalInterface: React.FC<ConversationalInterfaceProps> = ({
             console.error("Failed to create GoogleGenAI instance:", err);
             setError("Could not establish connection to the core intelligence. Check API configuration.");
         }
-    }, [setText]);
+    }, [setText, setSystemStatus]);
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -71,9 +98,11 @@ const ConversationalInterface: React.FC<ConversationalInterfaceProps> = ({
         setMessages(prev => [...prev, userMessage]);
         
         setText(input);
+        setActiveConcept(input.toUpperCase());
         
         setIsLoading(true);
         setError(null);
+        setSystemStatus('COMMUNICATING');
         
         const originalInput = input;
         setInput(''); // Clear input for better UX
@@ -85,22 +114,37 @@ const ConversationalInterface: React.FC<ConversationalInterfaceProps> = ({
             setText(response.text);
         } catch (err) {
             console.error("Gemini chat error:", err);
-            setError("Communication channel unstable. Please try again.");
+            let errorMessage = "Communication channel unstable. Please try again.";
+            if (err instanceof Error) {
+                try {
+                    const apiError = JSON.parse(err.message);
+                    if (apiError.error && (apiError.error.code === 429 || apiError.error.status === 'RESOURCE_EXHAUSTED')) {
+                        errorMessage = `**API Quota Exceeded**\n\nYou have reached your usage limit for the A.O.C. Console.\n\nFree tiers of APIs often have rate limits. Please check your plan and billing details to ensure you have available quota.\n\n**Useful Links:**\n- [Monitor API Usage](https://ai.dev/usage?tab=rate-limit)\n- [API Rate Limits Info](https://ai.google.dev/gemini-api/docs/rate-limits)`;
+                    } else {
+                        errorMessage += `\n\n**Details:**\n\`\`\`\n${JSON.stringify(apiError, null, 2)}\n\`\`\``;
+                    }
+                } catch (parseError) {
+                    errorMessage += `\n\n**Details:**\n\`\`\`\n${err.message}\n\`\`\``;
+                }
+            }
+            setError(errorMessage);
             setMessages(prev => prev.slice(0, prev.length - 1));
             setInput(originalInput);
+            setSystemStatus('ERROR');
         } finally {
             setIsLoading(false);
+            setSystemStatus('IDLE');
         }
     };
 
     return (
-        <div className="w-full h-full p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-lg border border-gray-700 pointer-events-auto flex flex-col max-h-[70vh]">
+        <div className="w-full p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-lg border border-gray-700 pointer-events-auto flex flex-col flex-grow min-h-0">
             <h2 className="text-lg font-bold text-white mb-3 font-orbitron text-center">A.O.C. CONSOLE</h2>
             <div className="flex-grow overflow-y-auto pr-2 space-y-4">
                 {messages.map((msg, index) => (
                     <div key={index} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
                         <div className={`max-w-xl p-3 rounded-lg text-sm md:text-base ${msg.sender === 'user' ? 'bg-cyan-900/50 text-cyan-200' : 'bg-gray-800/50 text-gray-300'}`}>
-                           <p className="whitespace-pre-wrap">{msg.text}</p>
+                           <MarkdownRenderer content={msg.text} className="prose prose-sm prose-invert max-w-none" />
                         </div>
                     </div>
                 ))}
@@ -115,7 +159,7 @@ const ConversationalInterface: React.FC<ConversationalInterfaceProps> = ({
                         </div>
                     </div>
                 )}
-                 {error && <div className="text-red-400 text-center text-sm p-2 bg-red-900/30 rounded">{error}</div>}
+                 {error && <div className="text-red-400 text-center text-sm p-2 bg-red-900/30 rounded"><MarkdownRenderer content={error} className="prose prose-sm prose-invert max-w-none" /></div>}
                 <div ref={messagesEndRef} />
             </div>
             <form onSubmit={handleSendMessage} className="mt-4 flex gap-2">
