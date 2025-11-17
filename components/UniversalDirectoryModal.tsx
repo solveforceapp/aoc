@@ -118,15 +118,18 @@ interface UniversalDirectoryModalProps {
     onClose: () => void;
 }
 
+interface DirectoryState {
+  selectedKey: DirectoryKey | null;
+}
+
 const UniversalDirectoryModal: React.FC<UniversalDirectoryModalProps> = ({ isOpen, onClose }) => {
     const { personalEntries, universalEntries, selectedEntryId, setSelectedEntryId } = useCodex();
-    const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
-    const [selectedLetterInfo, setSelectedLetterInfo] = useState<DirectoryKey | null>(null);
+    const [directoryState, setDirectoryState] = useState<DirectoryState>({ selectedKey: null });
+    const { selectedKey } = directoryState;
 
     useEffect(() => {
         if (isOpen) {
-            setSelectedLetter(null);
-            setSelectedLetterInfo(null);
+            setDirectoryState({ selectedKey: null });
             setSelectedEntryId(null);
         }
     }, [isOpen, setSelectedEntryId]);
@@ -152,12 +155,11 @@ const UniversalDirectoryModal: React.FC<UniversalDirectoryModalProps> = ({ isOpe
         return grouped;
     }, [allEntries]);
 
-    const filteredEntries = useMemo(() => (selectedLetter ? entriesByLetter[selectedLetter] || [] : []), [entriesByLetter, selectedLetter]);
+    const filteredEntries = useMemo(() => (selectedKey ? entriesByLetter[selectedKey.glyph] || [] : []), [entriesByLetter, selectedKey]);
     const selectedEntry = useMemo(() => allEntries.find(e => e.id === selectedEntryId) || null, [allEntries, selectedEntryId]);
     
     const handleLetterSelect = useCallback((keyData: DirectoryKey) => {
-        setSelectedLetter(keyData.glyph);
-        setSelectedLetterInfo(keyData);
+        setDirectoryState({ selectedKey: keyData });
         setSelectedEntryId(null); // Clear entry selection when a new letter is chosen
     }, [setSelectedEntryId]);
 
@@ -172,7 +174,7 @@ const UniversalDirectoryModal: React.FC<UniversalDirectoryModalProps> = ({ isOpe
                                 key={keyData.glyph}
                                 keyData={keyData} 
                                 onSelect={handleLetterSelect}
-                                isSelected={selectedLetter === keyData.glyph}
+                                isSelected={selectedKey?.glyph === keyData.glyph}
                                 hasEntries={!!entriesByLetter[keyData.glyph]}
                             />
                         ))}
@@ -183,7 +185,7 @@ const UniversalDirectoryModal: React.FC<UniversalDirectoryModalProps> = ({ isOpe
                                 key={keyData.glyph}
                                 keyData={keyData} 
                                 onSelect={handleLetterSelect}
-                                isSelected={selectedLetter === keyData.glyph}
+                                isSelected={selectedKey?.glyph === keyData.glyph}
                                 hasEntries={!!entriesByLetter[keyData.glyph]}
                             />
                         ))}
@@ -196,10 +198,10 @@ const UniversalDirectoryModal: React.FC<UniversalDirectoryModalProps> = ({ isOpe
                 <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 min-h-0">
                     {/* Left Panel: Entry List */}
                     <div className="overflow-y-auto pr-2 border-r border-gray-700/50">
-                        {selectedLetter ? (
+                        {selectedKey ? (
                             filteredEntries.length > 0 ? (
                                 <div className="space-y-1">
-                                    <h3 className="text-lg font-orbitron text-gray-300 mb-2">Entries for '{selectedLetter}'</h3>
+                                    <h3 className="text-lg font-orbitron text-gray-300 mb-2">Entries for '{selectedKey.glyph}'</h3>
                                     {filteredEntries.map(entry => (
                                         <button
                                             key={entry.id}
@@ -217,7 +219,7 @@ const UniversalDirectoryModal: React.FC<UniversalDirectoryModalProps> = ({ isOpe
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-center h-full text-gray-600">
-                                    <p className="font-orbitron text-center">No Codex entries found for '{selectedLetter}'.</p>
+                                    <p className="font-orbitron text-center">No Codex entries found for '{selectedKey.glyph}'.</p>
                                 </div>
                             )
                         ) : (
@@ -230,8 +232,8 @@ const UniversalDirectoryModal: React.FC<UniversalDirectoryModalProps> = ({ isOpe
                     <div className="overflow-y-auto pl-2" role="region" aria-live="polite">
                         {selectedEntry ? (
                             <EntryDetailDisplay entry={selectedEntry} />
-                        ) : selectedLetterInfo ? (
-                            <LetterDetailDisplay selectedKey={selectedLetterInfo} />
+                        ) : selectedKey ? (
+                            <LetterDetailDisplay selectedKey={selectedKey} />
                         ) : (
                             <div className="flex items-center justify-center h-full text-gray-600">
                                 <p className="font-orbitron text-center">SELECT AN ENTRY TO VIEW DETAILS</p>

@@ -1,7 +1,8 @@
 import React from "react";
+// FIX: Corrected import paths for geometronomics types and hooks.
 import { LanguageUnits } from "../geometronomics/shapes";
 import { usePhoneticPlayback } from "../hooks/usePhoneticPlayback";
-import { usePhonemeTrainer } from "../hooks/usePhonemeTrainer";
+import { usePhonemeTrainer } from "../../hooks/usePhonemeTrainer";
 import { LanguageUnitType } from "../geometronomics/types";
 
 interface LanguageUnitsStackOverlayProps {

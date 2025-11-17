@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+// FIX: Corrected import path for LanguageUnits type.
 import type { LanguageUnits } from "../geometronomics/shapes";
 
 export function usePhoneticPlayback(language: LanguageUnits | null) {

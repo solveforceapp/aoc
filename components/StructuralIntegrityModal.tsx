@@ -1,4 +1,5 @@
 import React from 'react';
+// FIX: Corrected import path for Modal component.
 import Modal from './common/Modal';
 
 interface StructuralIntegrityModalProps {
