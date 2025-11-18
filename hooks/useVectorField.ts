@@ -5,6 +5,7 @@ import { MODAL_CONFIG } from '../src/utils/modal-config';
 import { PROFILES } from '../src/utils/vector-field-profiles';
 import { ModalKey, VectorFieldProfile, WordSignature } from '../src/types';
 import { getSpectralColor } from '../src/utils/color';
+// FIX: Corrected import path for useSystemContext
 import { useSystemContext } from '../contexts/SystemContext';
 import { useModal } from '../src/context/ModalContext';
 
@@ -180,10 +181,10 @@ export function useVectorField({
           profile = PROFILES['spiral'];
       } else {
           // Original logic based on active text concept
-          const key = Object.keys(MODAL_CONFIG).find(k => MODAL_CONFIG[k].text === text) as ModalKey | undefined;
+          const key = Object.keys(MODAL_CONFIG).find(k => MODAL_CONFIG[k as ModalKey].text === text) as ModalKey | undefined;
           
-          if (key && MODAL_CONFIG[key].profileId) {
-              profile = PROFILES[MODAL_CONFIG[key].profileId!] || PROFILES['default'];
+          if (key && MODAL_CONFIG[key as ModalKey].profileId) {
+              profile = PROFILES[MODAL_CONFIG[key as ModalKey].profileId!] || PROFILES['default'];
           } 
           else if (wordSignature) {
               const profileKeys = Object.keys(PROFILES);
@@ -196,7 +197,7 @@ export function useVectorField({
           }
       }
       
-      const key = Object.keys(MODAL_CONFIG).find(k => MODAL_CONFIG[k].text === text) as ModalKey | undefined;
+      const key = Object.keys(MODAL_CONFIG).find(k => MODAL_CONFIG[k as ModalKey].text === text) as ModalKey | undefined;
       const spectralColor = getSpectralColor(key, wordSignature);
 
       const dpr = window.devicePixelRatio || 1;
@@ -217,7 +218,6 @@ export function useVectorField({
        if (geometry.polygon) {
          const sides = geometry.polygon.sides;
          const angleStep = (Math.PI * 2) / sides;
-         ctx.beginPath();
          const canvasVertices: {x:number, y:number}[] = [];
          for (let i = 0; i < sides; i++) {
            const angle = i * angleStep + wobble;
@@ -242,7 +242,7 @@ export function useVectorField({
            const v = polygonVerticesRef.current[hoveredVertex];
            const modalKeys = Object.keys(MODAL_CONFIG) as ModalKey[];
            const modalToOpen = modalKeys[hoveredVertex % modalKeys.length];
-           const conceptText = MODAL_CONFIG[modalToOpen]?.text || '';
+           const conceptText = MODAL_CONFIG[modalToOpen as ModalKey]?.text || '';
            
            ctx.save();
            // Draw a circle highlight

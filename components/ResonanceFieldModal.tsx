@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './common/Modal';
+// FIX: Corrected import path for useSystemContext
 import { useSystemContext } from '../contexts/SystemContext';
 import { GoogleGenAI, Type } from '@google/genai';
 
@@ -148,7 +149,7 @@ Respond ONLY with a valid JSON object that adheres to the provided schema. The m
             };
 
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: {
                     responseMimeType: 'application/json',

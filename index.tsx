@@ -8,6 +8,9 @@ import { CodexProvider } from './src/context/CodexContext';
 import { ImageCodexProvider } from './src/context/ImageCodexContext';
 import { SubdomainRegistryProvider } from './src/geometronomics/subdomainRegistry';
 import { NOMICS_MANIFEST } from './src/geometronomics/nomicsManifest';
+import { AuditProvider } from './contexts/AuditContext';
+import { DirectoryProvider } from './src/context/DirectoryContext';
+import { HealthProvider } from './src/system/HealthContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -18,17 +21,23 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <SubdomainRegistryProvider rootDomain="solveforce.com" manifest={NOMICS_MANIFEST}>
-      <ModalProvider>
-        <SystemProvider>
-          <TextVectorProvider>
-            <CodexProvider>
-              <ImageCodexProvider>
-                <App />
-              </ImageCodexProvider>
-            </CodexProvider>
-          </TextVectorProvider>
-        </SystemProvider>
-      </ModalProvider>
+      <SystemProvider>
+        <AuditProvider>
+          <ModalProvider>
+            <TextVectorProvider>
+              <CodexProvider>
+                <ImageCodexProvider>
+                  <DirectoryProvider>
+                      <HealthProvider>
+                        <App />
+                      </HealthProvider>
+                  </DirectoryProvider>
+                </ImageCodexProvider>
+              </CodexProvider>
+            </TextVectorProvider>
+          </ModalProvider>
+        </AuditProvider>
+      </SystemProvider>
     </SubdomainRegistryProvider>
   </React.StrictMode>
 );

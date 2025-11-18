@@ -1,4 +1,5 @@
 
+
 import { ModalKey } from '../types';
 
 export const MODAL_CONFIG: Record<string, { text: string, profileId?: string }> = {
@@ -36,4 +37,12 @@ export const MODAL_CONFIG: Record<string, { text: string, profileId?: string }> 
     'PRIMORDIAL_CODE': { text: 'CODE', profileId: 'turbulent' },
     'UNIVERSAL_DIRECTORY': { text: 'DIRECTORY', profileId: 'grid' },
     'COMMA_COROLLARY': { text: 'COROLLARY', profileId: 'turbulent' },
+    'GENESIS_ENGINE': { text: 'GENESIS', profileId: 'spiral' },
+    'NOMICS_INSPECTOR': { text: 'INSPECTOR', profileId: 'grid' },
+    'GRAPHEME_DETAIL': { text: 'GRAPHEME', profileId: 'default' },
+    'SHAPE_DETAIL': { text: 'SHAPE', profileId: 'default' },
+    'CODEX_ENTRY_DETAIL': { text: 'CODEX', profileId: 'default' },
+    'NOMIC_DETAIL': { text: 'NOMIC', profileId: 'default' },
+    'DUAL_ENGINE_STATE_MACHINE': { text: 'DUAL ENGINE', profileId: 'grid' },
+    'DIRECTORY_MANAGER': { text: 'DIR_MANAGER', profileId: 'grid' },
 };

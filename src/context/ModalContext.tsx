@@ -1,4 +1,3 @@
-
 import React, {
   createContext,
   useCallback,
@@ -31,6 +30,8 @@ const INITIAL_MODAL_STATE: ModalState = Object.keys({
     MONICS_PLATE: false, NOMICS_PLATE: false, MENOMICS_PLATE: false, GRAPHEMIC_LAW: false,
     PRIMORDIAL_CODE: false, RESONANCE_FIELD: false, UNIVERSAL_GRAMMAR: false,
     UNIVERSAL_DIRECTORY: false, COMMA_COROLLARY: false, GENESIS_ENGINE: false,
+    NOMICS_INSPECTOR: false, GRAPHEME_DETAIL: false, SHAPE_DETAIL: false, CODEX_ENTRY_DETAIL: false, NOMIC_DETAIL: false,
+    DUAL_ENGINE_STATE_MACHINE: false, DIRECTORY_MANAGER: false,
 } as Record<ModalKey, boolean>).reduce((acc, key) => {
     acc[key as ModalKey] = false;
     return acc;

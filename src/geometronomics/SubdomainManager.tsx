@@ -13,7 +13,15 @@ const ALL_UNIT_TYPES: LanguageUnitType[] = [
 
 const SubdomainManager: React.FC = () => {
   const { currentHost, currentSubdomain, apps, addOrUpdateApp } = useSubdomainRegistry();
-  const theme = useTenantTheme();
+  const defaultTheme = {
+      primary: "#0f766e",
+      primarySoft: "#ecfeff",
+      accent: "#14b8a6",
+      background: "#020617",
+      border: "#1f2937",
+      text: "#e5e7eb"
+  };
+  const theme = useTenantTheme() || defaultTheme;
   const [editing, setEditing] = useState<SubdomainApp | null>(null);
 
   const startEdit = (app?: SubdomainApp) => {

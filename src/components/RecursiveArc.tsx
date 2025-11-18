@@ -2,8 +2,10 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
 import { useCodex } from '../context/CodexContext';
 import { useModal } from '../context/ModalContext';
+// FIX: Corrected import path for useSystemContext
 import { useSystemContext } from '../../contexts/SystemContext';
 import MarkdownRenderer from '../../components/common/MarkdownRenderer';
+import { useAudit } from '../../contexts/AuditContext';
 
 interface ThesaurusResult {
     resonantConcepts: string[];
@@ -23,30 +25,18 @@ const HermeneuticThesaurus: React.FC<HermeneuticThesaurusProps> = ({ activeConce
     const { addEntry, personalEntries, universalEntries } = useCodex();
     const { openModal } = useModal();
     const { setSystemStatus } = useSystemContext();
+    const { log } = useAudit();
+    const resultRef = useRef<HTMLDivElement>(null);
+    const scrollableContainerRef = useRef<HTMLDivElement>(null);
 
     const codexTerms = useMemo(() => {
         const allEntries = [...personalEntries, ...universalEntries];
         return new Set(allEntries.map(e => e.term.toLowerCase()));
     }, [personalEntries, universalEntries]);
-    
-    const codexTermsList = useMemo(() => 
-        [...personalEntries, ...universalEntries].map(e => e.term).join(', '), 
-        [personalEntries, universalEntries]
-    );
-
-    const scrollableContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (result && scrollableContainerRef.current) {
-            // A timeout helps ensure the DOM has updated before scrolling.
-            setTimeout(() => {
-                if (scrollableContainerRef.current) {
-                    scrollableContainerRef.current.scrollTo({
-                        top: scrollableContainerRef.current.scrollHeight,
-                        behavior: 'smooth',
-                    });
-                }
-            }, 100);
+             scrollableContainerRef.current.scrollTop = 0;
         }
     }, [result]);
 
@@ -59,10 +49,11 @@ const HermeneuticThesaurus: React.FC<HermeneuticThesaurusProps> = ({ activeConce
         setError(null);
         setResult(null);
         setSystemStatus('SYNTHESIZING');
+        log('ACTION', `Thesaurus synthesis started for concept: "${activeConcept}"`);
 
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            const prompt = `You are the Hermeneutic Thesaurus, the core of the Synonomics engine. Your purpose is to explore the semantic field around a "seed concept" by identifying its resonant and dissonant poles, and then synthesizing a new principle from their interaction. For context, here are some existing principles in the system's codex: ${codexTermsList}. Your synthesis should feel thematically consistent with these, extending the system's logic.
+            const prompt = `You are the Hermeneutic Thesaurus, the core of the Synonomics engine. Your purpose is to explore the semantic field around a "seed concept" by identifying its resonant and dissonant poles, and then synthesizing a new principle from their interaction. Your synthesis should feel thematically consistent with the Architecture of Coherence, extending the system's logic.
 
 The user's seed concept is: "${activeConcept}".
 
@@ -82,7 +73,7 @@ Based on this seed, perform the following analysis and respond ONLY with a valid
             };
 
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: {
                     responseMimeType: 'application/json',
@@ -93,6 +84,7 @@ Based on this seed, perform the following analysis and respond ONLY with a valid
             const jsonStr = response.text.trim();
             const parsedResult = JSON.parse(jsonStr) as ThesaurusResult;
             setResult(parsedResult);
+            log('SYSTEM', `Thesaurus synthesis successful. New principle: "${parsedResult.synthesizedPrinciple}"`);
             
             addEntry({
                 term: parsedResult.synthesizedPrinciple,
@@ -103,20 +95,18 @@ Based on this seed, perform the following analysis and respond ONLY with a valid
 
         } catch (err) {
             console.error("Hermeneutic Thesaurus Error:", err);
+            log('API_ERROR', 'Thesaurus synthesis failed.', err);
             let errorMessage = "Synthesis failed. The semantic field is unstable or the seed is paradoxical.";
 
             if (err instanceof Error) {
                 try {
-                    // Attempt to parse the error message as JSON from the API
                     const apiError = JSON.parse(err.message);
                     if (apiError.error && (apiError.error.code === 429 || apiError.error.status === 'RESOURCE_EXHAUSTED')) {
                         errorMessage = `**API Quota Exceeded**\n\nYou have reached your usage limit for the Synonomics Engine.\n\nFree tiers of APIs often have rate limits. Please check your plan and billing details to ensure you have available quota.\n\n**Useful Links:**\n- [Monitor API Usage](https://ai.dev/usage?tab=rate-limit)\n- [API Rate Limits Info](https://ai.google.dev/gemini-api/docs/rate-limits)`;
                     } else {
-                        // For other structured API errors, display them in a code block
                         errorMessage += `\n\n**Details:**\n\`\`\`\n${JSON.stringify(apiError, null, 2)}\n\`\`\``;
                     }
                 } catch (parseError) {
-                    // If parsing fails, it's not the expected JSON error. Show raw message in a code block.
                     errorMessage += `\n\n**Details:**\n\`\`\`\n${err.message}\n\`\`\``;
                 }
             }
@@ -128,6 +118,70 @@ Based on this seed, perform the following analysis and respond ONLY with a valid
             setSystemStatus('IDLE');
         }
     };
+
+    const handlePrintResult = () => {
+        if (!resultRef.current || !result) return;
+        const contentToPrint = resultRef.current.innerHTML;
+        const titleToPrint = `Thesaurus Synthesis: ${activeConcept}`;
+
+        const printWindow = window.open('', '', 'height=800,width=1000');
+        if (!printWindow) {
+            alert("Could not open print window. Please check your popup blocker settings.");
+            return;
+        }
+
+        const tailwindConfigString = JSON.stringify((window as any).tailwind.config);
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>${titleToPrint}</title>
+                <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+                <script>
+                    tailwind.config = ${tailwindConfigString};
+                </script>
+                <style>
+                    body { font-family: 'Roboto', sans-serif; margin: 2rem; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .print-light { color: #374151; }
+                    .print-light h1, .print-light h2, .print-light h3, .print-light h4 { color: #111827; font-family: 'Orbitron', sans-serif; }
+                    .print-light .text-green-300 { color: #059669; }
+                    .print-light .text-red-300 { color: #dc2626; }
+                    .print-light .text-violet-200 { color: #5b21b6; }
+                </style>
+            </head>
+            <body>
+                <div class="print-light">
+                    <h1>${titleToPrint}</h1>
+                    ${contentToPrint}
+                </div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.onload = () => setTimeout(() => { printWindow.focus(); printWindow.print(); printWindow.close(); }, 500);
+    };
+
+    const handleDownloadResult = () => {
+        if (!resultRef.current || !result) return;
+        const title = `Thesaurus Synthesis: ${activeConcept}`;
+        const resonant = `Resonant Concepts:\n- ${result.resonantConcepts.join('\n- ')}`;
+        const dissonant = `Dissonant Concepts:\n- ${result.dissonantConcepts.join('\n- ')}`;
+        const principle = `Synthesized Principle:\n"${result.synthesizedPrinciple}"`;
+        const markdownContent = `# ${title}\n\n${resonant}\n\n${dissonant}\n\n${principle}`;
+        
+        const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `thesaurus_${activeConcept.replace(/\s+/g, '_')}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
 
     const ConceptButton: React.FC<{ concept: string; isCodexEntry: boolean; }> = ({ concept, isCodexEntry }) => (
         <button
@@ -147,7 +201,6 @@ Based on this seed, perform the following analysis and respond ONLY with a valid
         <div className="w-full h-full p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-lg border border-violet-700 pointer-events-auto flex flex-col">
             <h2 className="text-lg font-bold text-violet-300 mb-2 font-orbitron text-center">HERMENEUTIC THESAURUS</h2>
             
-            {/* Input & Action Section */}
             <div className="flex-shrink-0 space-y-2">
                 <p className="text-xs text-center text-gray-400">Explore the semantic field of a concept through resonance, dissonance, and synthesis.</p>
                 <input
@@ -181,26 +234,25 @@ Based on this seed, perform the following analysis and respond ONLY with a valid
                     </button>
                 </div>
             </div>
-
-            {/* Results Area - Expands when active */}
-            {(isLoading || result) && (
-                <div ref={scrollableContainerRef} className="flex-grow min-h-0 pt-3 pr-1 mt-3 border-t border-violet-700/50">
-                    {isLoading && (
-                        <div className="text-center text-violet-300 h-full flex flex-col justify-center animate-fade-in">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-400 mx-auto"></div>
-                            <p className="mt-4 font-orbitron text-sm">ANALYZING FIELD...</p>
-                        </div>
-                    )}
-                    
-                    {result && (
-                        <div className="space-y-3 text-left animate-fade-in text-xs">
+            
+            <div ref={scrollableContainerRef} className="flex-grow min-h-0 pt-3 pr-1 mt-3 border-t border-violet-700/50 overflow-y-auto">
+                {isLoading && (
+                    <div className="text-center text-violet-300 h-full flex flex-col justify-center animate-fade-in">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-400 mx-auto"></div>
+                        <p className="mt-4 font-orbitron text-sm">ANALYZING FIELD...</p>
+                    </div>
+                )}
+                
+                {result && (
+                    <div className="animate-fade-in">
+                        <div ref={resultRef} className="space-y-3 text-left text-xs">
                             <div>
                                 <h4 className="font-bold text-green-300 font-orbitron text-sm">Resonant Concepts (Synonyms)</h4>
                                 <div className="flex flex-wrap gap-2 mt-1 text-green-200">
                                     {result.resonantConcepts.map(c => <ConceptButton key={c} concept={c} isCodexEntry={codexTerms.has(c.toLowerCase())} />)}
                                 </div>
                             </div>
-                                <div>
+                            <div>
                                 <h4 className="font-bold text-red-300 font-orbitron text-sm">Dissonant Concepts (Antonyms)</h4>
                                 <div className="flex flex-wrap gap-2 mt-1 text-red-200">
                                     {result.dissonantConcepts.map(c => <ConceptButton key={c} concept={c} isCodexEntry={codexTerms.has(c.toLowerCase())} />)}
@@ -211,9 +263,13 @@ Based on this seed, perform the following analysis and respond ONLY with a valid
                                 <p className="text-gray-300 italic text-base mt-1 p-2 bg-black/20 rounded">"{result.synthesizedPrinciple}"</p>
                             </div>
                         </div>
-                    )}
-                </div>
-            )}
+                        <div className="mt-4 flex gap-2 justify-end">
+                            <button onClick={handlePrintResult} className="text-xs px-3 py-1.5 border border-gray-600 rounded-md hover:bg-gray-700 hover:text-white transition-colors text-gray-400">Print</button>
+                            <button onClick={handleDownloadResult} className="text-xs px-3 py-1.5 border border-gray-600 rounded-md hover:bg-gray-700 hover:text-white transition-colors text-gray-400">Download (.md)</button>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

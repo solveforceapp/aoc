@@ -22,7 +22,16 @@ const GeometronomicsShapeBrowser: React.FC<GeometronomicsShapeBrowserProps> = ({
   const [selectedDimension, setSelectedDimension] = useState<ShapeSpec['dimension']>("2D");
   const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const theme = useTenantTheme();
+  
+  const defaultTheme = {
+      primary: "#0f766e",
+      primarySoft: "#ecfeff",
+      accent: "#14b8a6",
+      background: "#020617",
+      border: "#1f2937",
+      text: "#e5e7eb"
+  };
+  const theme = useTenantTheme() || defaultTheme;
 
   const shapesForDim = SHAPES.filter(s => s.dimension === selectedDimension);
   const selectedShape = shapesForDim.find(s => s.id === selectedShapeId) || shapesForDim[0];
@@ -160,7 +169,6 @@ const GeometronomicsShapeBrowser: React.FC<GeometronomicsShapeBrowserProps> = ({
               const isSelected = !!shape && shape.id === selectedShape?.id;
               const matchesGlyph = !!shape && isShapeMatchingGlyph(shape);
               const angle = (2 * Math.PI * index) / 22 - Math.PI / 2;
-              // FIX: Explicitly typed the `style` object as `React.CSSProperties` to resolve a TypeScript error where the `position` property was being inferred as a generic `string` instead of the more specific `Position` type required by React's style prop.
               const style: React.CSSProperties = {
                 position: 'absolute',
                 left: `calc(50% + ${105 * Math.cos(angle)}px)`,

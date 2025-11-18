@@ -5,7 +5,15 @@ import { useSubdomainRegistry, useTenantTheme } from "./subdomainRegistry";
 const TenantPreviewSwitcher: React.FC = () => {
   const { apps, currentApp, previewAppKey, setPreviewAppKey } =
     useSubdomainRegistry();
-  const theme = useTenantTheme();
+  const defaultTheme = {
+      primary: "#0f766e",
+      primarySoft: "#ecfeff",
+      accent: "#14b8a6",
+      background: "#020617",
+      border: "#1f2937",
+      text: "#e5e7eb"
+  };
+  const theme = useTenantTheme() || defaultTheme;
 
   const wrapper: React.CSSProperties = {
     borderRadius: "0.75rem",

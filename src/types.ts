@@ -1,5 +1,3 @@
-
-
 export type ImageGenerationState = 'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR';
 
 export type VectorFieldFlowType =
@@ -61,7 +59,14 @@ export type ModalKey =
   | 'UNIVERSAL_GRAMMAR'
   | 'UNIVERSAL_DIRECTORY'
   | 'COMMA_COROLLARY'
-  | 'GENESIS_ENGINE';
+  | 'GENESIS_ENGINE'
+  | 'NOMICS_INSPECTOR'
+  | 'GRAPHEME_DETAIL'
+  | 'SHAPE_DETAIL'
+  | 'CODEX_ENTRY_DETAIL'
+  | 'NOMIC_DETAIL'
+  | 'DUAL_ENGINE_STATE_MACHINE'
+  | 'DIRECTORY_MANAGER';
 
 export type FieldProgramStep = ModalKey | { key: ModalKey; durationMs?: number };
 
@@ -79,7 +84,7 @@ export type WordSignature = {
     length: number;
 };
 
-export type CodexOrigin = 'Enginomics Console' | 'Hermeneutic Thesaurus' | 'Predicate Expansion' | 'Universal Grammar' | 'Image Synthesizer' | 'Genesis Engine';
+export type CodexOrigin = 'Enginomics Console' | 'Hermeneutic Thesaurus' | 'Predicate Expansion' | 'Universal Grammar' | 'Image Synthesizer' | 'Genesis Engine' | 'Geometronomics Glyphs';
 
 export interface CodexEntryRevision {
     definition: string;

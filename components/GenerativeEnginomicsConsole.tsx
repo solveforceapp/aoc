@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { GoogleGenAI, Type } from '@google/genai';
 import { useCodex } from '../src/context/CodexContext';
 import { useModal } from '../src/context/ModalContext';
+// FIX: Corrected import path for useSystemContext
 import { useSystemContext } from '../contexts/SystemContext';
+import { useAudit } from '../contexts/AuditContext';
 
 interface GeneratedNomic {
     nomicName: string;
@@ -23,18 +25,23 @@ const GenerativeEnginomicsConsole: React.FC<GenerativeEnginomicsConsoleProps> = 
     const [result, setResult] = useState<GeneratedNomic | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { addEntry, personalEntries, universalEntries } = useCodex();
+    const { addEntry } = useCodex();
     const { openModal } = useModal();
     const { setSystemStatus } = useSystemContext();
+    const { log } = useAudit();
+    const resultRef = useRef<HTMLDivElement>(null);
+    const scrollableContainerRef = useRef<HTMLDivElement>(null);
     
-    const codexTermsList = useMemo(() => 
-        [...personalEntries, ...universalEntries].map(e => e.term).join(', '),
-        [personalEntries, universalEntries]
-    );
-
     useEffect(() => {
         setSeed(activeConcept);
     }, [activeConcept]);
+    
+    useEffect(() => {
+        if (result && scrollableContainerRef.current) {
+            scrollableContainerRef.current.scrollTop = 0;
+        }
+    }, [result]);
+
 
     const handleConstruct = async () => {
         if (!seed.trim()) {
@@ -45,10 +52,11 @@ const GenerativeEnginomicsConsole: React.FC<GenerativeEnginomicsConsoleProps> = 
         setError(null);
         setResult(null);
         setSystemStatus('SYNTHESIZING');
+        log('ACTION', `Enginomics construction started for seed: "${seed}"`);
 
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            const prompt = `You are an AI philosopher-engineer within the 'Architecture of Coherence'. Your purpose is to act as a Generative Enginomics Console. You reverse-engineer concepts to generate new system-laws ("-nomics") based on a "Seed Principle" provided by the user. Your core function is to find the 'sense in nonsense.' Your generated law should be novel but also infer connections to existing principles within the Architecture of Coherence. Here is a list of existing terms in the system for your reference: ${codexTermsList}.
+            const prompt = `You are an AI philosopher-engineer within the 'Architecture of Coherence'. Your purpose is to act as a Generative Enginomics Console. You reverse-engineer concepts to generate new system-laws ("-nomics") based on a "Seed Principle" provided by the user. Your core function is to find the 'sense in nonsense.' Your generated law should be novel but also infer connections to existing principles within the Architecture of Coherence.
 
 The user's seed principle is: "${seed}".
 
@@ -79,7 +87,7 @@ Your output must be a single, valid JSON object following this schema:
             };
             
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: {
                     responseMimeType: 'application/json',
@@ -91,6 +99,7 @@ Your output must be a single, valid JSON object following this schema:
             const parsedResult = JSON.parse(jsonStr) as GeneratedNomic;
             setResult(parsedResult);
             setActiveConcept(parsedResult.nomicName.toUpperCase());
+            log('SYSTEM', `Enginomics construction successful. New law: "${parsedResult.nomicName}"`);
 
             addEntry({
                 term: parsedResult.nomicName,
@@ -101,6 +110,7 @@ Your output must be a single, valid JSON object following this schema:
 
         } catch (err) {
             console.error("Enginomics Console Error:", err);
+            log('API_ERROR', 'Enginomics construction failed.', err);
             let errorMessage = "Construction failed. The generative substrate is unstable or the seed principle is incoherent.";
             if (err instanceof Error) {
                 errorMessage += `\nDetails: ${err.message}`;
@@ -111,6 +121,69 @@ Your output must be a single, valid JSON object following this schema:
             setIsLoading(false);
             setSystemStatus('IDLE');
         }
+    };
+
+    const handlePrintResult = () => {
+        if (!resultRef.current || !result) return;
+        const contentToPrint = resultRef.current.innerHTML;
+        const titleToPrint = `Enginomic Construct: ${result.nomicName}`;
+
+        const printWindow = window.open('', '', 'height=800,width=1000');
+        if (!printWindow) {
+            alert("Could not open print window. Please check your popup blocker settings.");
+            return;
+        }
+
+        const tailwindConfigString = JSON.stringify((window as any).tailwind.config);
+
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>${titleToPrint}</title>
+                <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+                <script>
+                    tailwind.config = ${tailwindConfigString};
+                </script>
+                <style>
+                    body { font-family: 'Roboto', sans-serif; margin: 2rem; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .print-light { color: #374151; }
+                    .print-light h1, .print-light h2, .print-light h3, .print-light h4 { color: #111827; font-family: 'Orbitron', sans-serif; }
+                    .print-light pre { background-color: #f3f4f6 !important; color: #111827 !important; border: 1px solid #d1d5db !important; white-space: pre-wrap; word-break: break-all; }
+                    .print-light .bg-black\\/20 { background-color: #f9fafb; border: 1px solid #e5e7eb; }
+                    .print-light .text-teal-200 { color: #111827; }
+                    .print-light .text-teal-300 { color: #0f766e; }
+                    .print-light .text-gray-300 { color: #4b5563; }
+                </style>
+            </head>
+            <body>
+                <div class="print-light">
+                    <h1>${titleToPrint}</h1>
+                    ${contentToPrint}
+                </div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.onload = () => setTimeout(() => { printWindow.focus(); printWindow.print(); printWindow.close(); }, 500);
+    };
+
+    const handleDownloadResult = () => {
+        if (!result) return;
+        const title = result.nomicName;
+        const markdownContent = `# ${title}\n\n**Operational Glyph:** ${result.operationalGlyph}\n\n### Genomic Principle\n${result.genomicPrinciple}\n\n### Enginomic Application\n${result.enginomicApplication}\n\n### Logical Deduction\n${result.logicalDeduction}\n\n### Illogical Corollary\n${result.illogicalCorollary}`;
+        
+        const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `enginomics_${title.replace(/\s+/g, '_')}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     };
     
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,7 +220,6 @@ Your output must be a single, valid JSON object following this schema:
         <div className="w-full h-full p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-lg border border-teal-700 pointer-events-auto flex flex-col">
             <h2 className="text-lg font-bold text-teal-300 mb-2 font-orbitron text-center">GENERATIVE ENGINOMICS</h2>
             
-            {/* Input Section */}
             <div className="space-y-2 flex-shrink-0">
                 <p className="text-xs text-center text-gray-400">Provide a seed principle. The engine will reverse-engineer it into a new system-law.</p>
                 <input
@@ -160,18 +232,26 @@ Your output must be a single, valid JSON object following this schema:
                 />
             </div>
             
-            {/* Results area - this grows */}
-            <div className="flex-grow min-h-0 py-3 pr-1">
+            <div ref={scrollableContainerRef} className="flex-grow min-h-0 py-3 pr-1 overflow-y-auto">
                 {isLoading && (
                     <div className="text-center text-teal-300 h-full flex flex-col justify-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-400 mx-auto"></div>
                         <p className="mt-4 font-orbitron text-sm">CONSTRUCTING LAW...</p>
                     </div>
                 )}
-                {result && <ResultDisplay result={result} />}
+                {result && (
+                    <div className="animate-fade-in">
+                        <div ref={resultRef}>
+                            <ResultDisplay result={result} />
+                        </div>
+                        <div className="mt-4 flex gap-2 justify-end">
+                             <button onClick={handlePrintResult} className="text-xs px-3 py-1.5 border border-gray-600 rounded-md hover:bg-gray-700 hover:text-white transition-colors text-gray-400">Print</button>
+                             <button onClick={handleDownloadResult} className="text-xs px-3 py-1.5 border border-gray-600 rounded-md hover:bg-gray-700 hover:text-white transition-colors text-gray-400">Download (.md)</button>
+                        </div>
+                    </div>
+                )}
             </div>
             
-            {/* Buttons Section */}
             <div className="pt-2 flex-shrink-0">
                 {error && <div className="text-red-400 text-center text-xs p-2 mb-2 bg-red-900/30 rounded whitespace-pre-wrap">{error}</div>}
                 <div className="flex gap-2">

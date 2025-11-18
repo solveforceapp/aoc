@@ -3,8 +3,10 @@ import { GoogleGenAI } from '@google/genai';
 import { ImageGenerationState } from '../src/types';
 import { useCodex } from '../src/context/CodexContext';
 import { useImageCodex } from '../src/context/ImageCodexContext';
+// FIX: Corrected import path for useSystemContext
 import { useSystemContext } from '../contexts/SystemContext';
 import MarkdownRenderer from './common/MarkdownRenderer';
+import { useAudit } from '../contexts/AuditContext';
 
 interface ImageGeneratorProps {
     setGenerationState: (state: ImageGenerationState) => void;
@@ -19,6 +21,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ setGenerationState, act
     const { addEntry } = useCodex();
     const { addImageEntry } = useImageCodex();
     const { setSystemStatus } = useSystemContext();
+    const { log } = useAudit();
 
     useEffect(() => {
         if (activeConcept) {
@@ -36,6 +39,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ setGenerationState, act
         setGeneratedImage(null);
         setGenerationState('LOADING');
         setSystemStatus('SYNTHESIZING');
+        log('ACTION', `Image synthesis started for prompt: "${prompt}"`);
 
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -54,6 +58,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ setGenerationState, act
                 const imageUrl = `data:image/jpeg;base64,${base64ImageBytes}`;
                 setGeneratedImage(imageUrl);
                 setGenerationState('SUCCESS');
+                log('SYSTEM', 'Image synthesis successful.');
                 
                 const timestamp = Date.now();
 
@@ -75,6 +80,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ setGenerationState, act
             }
         } catch (err) {
             console.error("Image generation failed:", err);
+            log('API_ERROR', 'Image generation failed.', err);
             let errorMessage = "Image generation failed. The creative substrate may be unstable. Please try again.";
 
             if (err instanceof Error) {

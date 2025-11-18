@@ -1,10 +1,12 @@
-import React, { useState, useRef, useCallback } from 'react';
-import ErrorBoundary from './src/components/ErrorBoundary';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { AppErrorBoundary } from './src/system/AppErrorBoundary';
 import { useTextVector } from './src/context/TextVectorContext';
 import { useModal } from './src/context/ModalContext';
+// FIX: Corrected import path for useSystemContext
 import { useSystemContext } from './contexts/SystemContext';
 import { useGlobalShortcuts } from './src/hooks/useGlobalShortcuts';
 import { useVectorField } from './hooks/useVectorField';
+import { useCodex } from './src/context/CodexContext';
 
 // Core Layout Components
 import VectorField from './components/VectorField';
@@ -19,6 +21,7 @@ import GeneratedCodex from './components/GeneratedCodex';
 import ImageGenerator from './components/ImageGenerator';
 import ImageCodex from './components/ImageCodex';
 import PneumaCycle from './src/components/PneumaCycle';
+import AuditTrailPanel from './components/AuditTrailPanel';
 
 // Modal Components
 import StructuralCoherenceModal from './components/StructuralCoherenceModal';
@@ -42,7 +45,7 @@ import SyntacticIntegrityModal from './components/SyntacticIntegrityModal';
 import SynonomicsModal from './src/components/HermeneuticEngine';
 import RegeneronomicsModal from './src/components/RegeneronomicsModal';
 import EtymonomicsModal from './src/components/EtymonomicsModal';
-import AutonomicsModal from './src/components/AutomomicsModal';
+import AutonomicsModal from './src/components/AutonomicsModal';
 import GlyphCodeModal from './components/GlyphCodeModal';
 import GraphemicLawModal from './components/GraphemicLawModal';
 import PrimordialCodeModal from './components/PrimordialCodeModal';
@@ -56,11 +59,19 @@ import UniversalGrammarModal from './components/UniversalGrammarModal';
 import UniversalDirectoryModal from './components/UniversalDirectoryModal';
 import CommaCorollaryModal from './components/CommaCorollaryModal';
 import GenesisEngineModal from './components/GenesisEngineModal';
+import NomicsInspectorModal from './components/NomicsInspectorModal';
+import GraphemeDetailModal from './components/GraphemeDetailModal';
+import ShapeDetailModal from './components/ShapeDetailModal';
+import CodexEntryDetailModal from './components/CodexEntryDetailModal';
+import NomicDetailModal from './components/NomicDetailModal';
+import DualEngineStateMachineModal from './src/components/DualEngineStateMachineModal';
+import DirectoryModal from './src/components/DirectoryModal';
 
 const App: React.FC = () => {
     const { activeConcept, setActiveConcept, cycleState, setCycleState, geometry, dimension, setDimension } = useTextVector();
     const { text, setText } = useSystemContext();
-    const { modals, openModal, closeModal } = useModal();
+    const { modals, openModal, closeModal, modalPayload } = useModal();
+    const { personalEntries, universalEntries } = useCodex();
     const [isFocusMode, setIsFocusMode] = useState(false);
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -77,8 +88,59 @@ const App: React.FC = () => {
         triggerAnnihilationReintegrationCycle(setCycleState);
     }, [triggerAnnihilationReintegrationCycle, setCycleState]);
 
+    useEffect(() => {
+        const handleRouting = () => {
+            const params = new URLSearchParams(window.location.search);
+            let appParams = params.get('appParams');
+            const hash = window.location.hash;
+
+            let entryId: string | null = null;
+            
+            if (appParams) {
+                try {
+                    // Handle AI Studio's potential double- or triple-encoding by repeatedly decoding
+                    let decoded = appParams;
+                    while (decoded.includes('%')) {
+                        const nextDecoded = decodeURIComponent(decoded);
+                        if (nextDecoded === decoded) {
+                            break; // No more changes, stop to prevent infinite loops
+                        }
+                        decoded = nextDecoded;
+                    }
+                    appParams = decoded;
+                } catch (e) {
+                    console.warn("Could not decode appParams", appParams);
+                }
+            }
+            
+            if (appParams && appParams.startsWith('codex/')) {
+                entryId = appParams.substring('codex/'.length);
+            } else if (hash && hash.startsWith('#codex/')) {
+                entryId = hash.substring('#codex/'.length);
+            }
+
+            if (entryId) {
+                const allEntries = [...personalEntries, ...universalEntries];
+                const entryToOpen = allEntries.find(e => e.id === entryId);
+                if (entryToOpen) {
+                    // Prevent re-opening modal if it's already open with the same entry
+                    if (!modals.CODEX_ENTRY_DETAIL || (modalPayload?.entry?.id !== entryToOpen.id)) {
+                        openModal('CODEX_ENTRY_DETAIL', { entry: entryToOpen });
+                    }
+                }
+            }
+        };
+
+        handleRouting(); // Handle on initial load
+        
+        // Also handle hash changes for SPA-like navigation
+        window.addEventListener('hashchange', handleRouting);
+        return () => window.removeEventListener('hashchange', handleRouting);
+
+    }, [openModal, personalEntries, universalEntries, modals.CODEX_ENTRY_DETAIL, modalPayload]);
+
     return (
-        <ErrorBoundary>
+        <AppErrorBoundary>
             <div className="app-container">
                 <VectorField canvasRef={canvasRef} />
                 
@@ -126,8 +188,11 @@ const App: React.FC = () => {
                                 onOpenResonanceField={() => openModal('RESONANCE_FIELD')}
                                 onOpenUniversalGrammar={() => openModal('UNIVERSAL_GRAMMAR')}
                                 onOpenNomosExplained={() => openModal('NOMOS_EXPLAINED')}
+                                onOpenNomicsInspector={() => openModal('NOMICS_INSPECTOR')}
+                                onOpenDualEngineStateMachine={() => openModal('DUAL_ENGINE_STATE_MACHINE')}
                             />
                             <ConversationalInterface text={text} setText={setText} setActiveConcept={setActiveConcept} />
+                            <AuditTrailPanel />
                         </div>
                         
                         {/* Middle Column */}
@@ -138,6 +203,7 @@ const App: React.FC = () => {
                             <PneumaCycle
                                 onOpenUniversalDirectory={() => openModal('UNIVERSAL_DIRECTORY')}
                                 onOpenCommaCorollary={() => openModal('COMMA_COROLLARY')}
+                                onOpenDirectoryManager={() => openModal('DIRECTORY_MANAGER')}
                             />
                         </div>
                         
@@ -185,8 +251,15 @@ const App: React.FC = () => {
                 <UniversalDirectoryModal isOpen={modals.UNIVERSAL_DIRECTORY} onClose={() => closeModal('UNIVERSAL_DIRECTORY')} />
                 <CommaCorollaryModal isOpen={modals.COMMA_COROLLARY} onClose={() => closeModal('COMMA_COROLLARY')} />
                 <GenesisEngineModal isOpen={modals.GENESIS_ENGINE} onClose={() => closeModal('GENESIS_ENGINE')} />
+                <NomicsInspectorModal isOpen={modals.NOMICS_INSPECTOR} onClose={() => closeModal('NOMICS_INSPECTOR')} />
+                <GraphemeDetailModal isOpen={modals.GRAPHEME_DETAIL} onClose={() => closeModal('GRAPHEME_DETAIL')} />
+                <ShapeDetailModal isOpen={modals.SHAPE_DETAIL} onClose={() => closeModal('SHAPE_DETAIL')} />
+                <CodexEntryDetailModal isOpen={modals.CODEX_ENTRY_DETAIL} onClose={() => closeModal('CODEX_ENTRY_DETAIL')} />
+                <NomicDetailModal isOpen={modals.NOMIC_DETAIL} onClose={() => closeModal('NOMIC_DETAIL')} />
+                <DualEngineStateMachineModal isOpen={modals.DUAL_ENGINE_STATE_MACHINE} onClose={() => closeModal('DUAL_ENGINE_STATE_MACHINE')} />
+                <DirectoryModal isOpen={modals.DIRECTORY_MANAGER} onClose={() => closeModal('DIRECTORY_MANAGER')} />
             </div>
-        </ErrorBoundary>
+        </AppErrorBoundary>
     );
 };
 

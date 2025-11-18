@@ -1,4 +1,5 @@
 import React, { ErrorInfo, ReactNode } from "react";
+import { AuditContext } from "../../contexts/AuditContext";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -9,7 +10,11 @@ interface State {
 }
 
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
+  // Using class field syntax for state removes the need for a constructor.
   state: State = { hasError: false };
+
+  static contextType = AuditContext;
+  declare context: React.ContextType<typeof AuditContext>;
 
   static getDerivedStateFromError(_: Error): State {
     // Update state so the next render will show the fallback UI.
@@ -18,8 +23,13 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
+    if (this.context && this.context.log) {
+        this.context.log('ERROR', `React Boundary: ${error.message}`, errorInfo.componentStack);
+    }
   }
 
+  // FIX: Converted from an arrow function to a standard class method to fix `this.props` being undefined.
+  // React automatically binds `this` for lifecycle methods like render().
   render(): ReactNode {
     if (this.state.hasError) {
       return (

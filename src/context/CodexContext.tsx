@@ -7,6 +7,7 @@ interface CodexContextType {
     universalEntries: CodexEntry[];
     addEntry: (entry: Omit<CodexEntry, 'id' | 'revisions'>) => void;
     clearPersonalEntries: () => void;
+    importPersonalEntries: (entries: CodexEntry[]) => void;
     latestEntryId: string | null;
     selectedEntryId: string | null;
     setSelectedEntryId: (id: string | null) => void;
@@ -23,6 +24,16 @@ export const CodexProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             return storedEntries ? JSON.parse(storedEntries) : [];
         } catch (error) {
             console.error("Failed to load personal codex from localStorage", error);
+             try {
+                const corruptedData = localStorage.getItem(PERSONAL_CODEX_STORAGE_KEY);
+                if (corruptedData) {
+                    localStorage.setItem(`${PERSONAL_CODEX_STORAGE_KEY}_corrupted_${Date.now()}`, corruptedData);
+                }
+                localStorage.removeItem(PERSONAL_CODEX_STORAGE_KEY);
+                alert("WARNING: Your personal codex data was corrupted and could not be loaded. Your saved entries have been cleared to prevent further issues. The corrupted data has been backed up in localStorage for potential debugging.");
+            } catch (e) {
+                console.error("Could not handle corrupted data", e);
+            }
             return [];
         }
     });
@@ -92,8 +103,40 @@ export const CodexProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setSelectedEntryId(null);
     }, []);
 
+    const importPersonalEntries = useCallback((entriesToImport: CodexEntry[]) => {
+        if (!Array.isArray(entriesToImport)) {
+            console.error("Import failed: provided data is not an array.");
+            alert("Import failed: The selected file is not a valid codex export.");
+            return;
+        }
+
+        setPersonalEntries(prev => {
+            const existingEntryMap = new Map(prev.map(e => [e.id, e]));
+            let importCount = 0;
+            let updateCount = 0;
+
+            for (const entry of entriesToImport) {
+                if (entry && typeof entry === 'object' && entry.id && entry.term && entry.definition) {
+                    if(existingEntryMap.has(entry.id)) {
+                        updateCount++;
+                    } else {
+                        importCount++;
+                    }
+                    existingEntryMap.set(entry.id, entry);
+                }
+            }
+            const merged = Array.from(existingEntryMap.values());
+            // FIX: Explicitly type `a` and `b` as `CodexEntry` to allow access to the `timestamp` property.
+            merged.sort((a: CodexEntry, b: CodexEntry) => b.timestamp - a.timestamp);
+            
+            alert(`Import complete: ${importCount} new entries added, ${updateCount} entries updated.`);
+            
+            return merged;
+        });
+    }, []);
+
     return (
-        <CodexContext.Provider value={{ personalEntries, universalEntries, addEntry, clearPersonalEntries, latestEntryId, selectedEntryId, setSelectedEntryId }}>
+        <CodexContext.Provider value={{ personalEntries, universalEntries, addEntry, clearPersonalEntries, importPersonalEntries, latestEntryId, selectedEntryId, setSelectedEntryId }}>
             {children}
         </CodexContext.Provider>
     );

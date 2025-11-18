@@ -3,7 +3,15 @@ import { useSubdomainRegistry, useTenantTheme } from "./subdomainRegistry";
 
 const CnameInstructions: React.FC = () => {
   const { rootDomain, mainAppBaseUrl, apps } = useSubdomainRegistry();
-  const theme = useTenantTheme();
+  const defaultTheme = {
+      primary: "#0f766e",
+      primarySoft: "#ecfeff",
+      accent: "#14b8a6",
+      background: "#020617",
+      border: "#1f2937",
+      text: "#e5e7eb"
+  };
+  const theme = useTenantTheme() || defaultTheme;
 
   const cardStyle: React.CSSProperties = {
     borderRadius: "0.75rem",
@@ -22,7 +30,7 @@ const CnameInstructions: React.FC = () => {
       "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
     fontSize: "0.8rem",
     background: theme.background,
-    color: theme.primary,
+    color: theme.primarySoft,
     padding: "0.4rem 0.5rem",
     borderRadius: "0.4rem",
     whiteSpace: "pre-wrap",
@@ -60,10 +68,7 @@ const CnameInstructions: React.FC = () => {
       </div>
 
       <p style={{ margin: 0, color: textColor }}>
-        Any domain can join the system by pointing CNAME records at the
-        SolveForce-hosted endpoints. The manifest defines the hub and all
-        nomics apps; the registry and these instructions are generated from that
-        manifest.
+        To connect your own domain (e.g., your-domain.com) to SolveForce, you need to create CNAME records in your DNS provider's settings. Below are the required values for each part of the system.
       </p>
 
       {/* Main hub instructions */}
@@ -78,27 +83,20 @@ const CnameInstructions: React.FC = () => {
           Main Hub (Geometronomics)
         </div>
         <p style={{ margin: "0.15rem 0", color: mutedTextColor }}>
-          Example CNAME to point a Geometronomics hub domain to the SolveForce
-          main app:
+          To point a subdomain like `hub.your-domain.com` to the main SolveForce application, use these settings:
         </p>
         <div style={codeStyle}>
-          geometronomics.{rootDomain} CNAME {mainHost}
-        </div>
-
-        <p style={{ margin: "0.15rem 0", color: mutedTextColor }}>
-          Your custom hub domain template:
-        </p>
-        <div style={codeStyle}>
-          [hub-subdomain].[your-domain] CNAME {mainHost}
+          <strong>Type:</strong>   CNAME
+          <br />
+          <strong>Name:</strong>   hub
+          <br />
+          <strong>Target:</strong> {mainHost}
         </div>
       </div>
 
       {/* Per-app instructions */}
       {apps.map(app => {
         const targetHost = hostOf(app.baseUrl);
-        const suggestedSub = `${app.key}.${rootDomain}`;
-        const userTemplate = `[${app.key}-subdomain].[your-domain]`;
-
         return (
           <div
             key={app.key}
@@ -110,36 +108,17 @@ const CnameInstructions: React.FC = () => {
           >
             <div style={{ fontWeight: 500, color: headingColor, fontFamily: "'Orbitron', 'sans-serif'" }}>{app.label}</div>
             <p style={{ margin: "0.15rem 0", color: mutedTextColor }}>
-              Example CNAME pointing to the {app.label} app:
+              To point a subdomain like `{app.key}.your-domain.com` to the {app.label}, use these settings:
             </p>
             <div style={codeStyle}>
-              {suggestedSub} CNAME {targetHost}
+                <strong>Type:</strong>   CNAME
+                <br />
+                <strong>Name:</strong>   {app.key}
+                <br />
+                <strong>Target:</strong> {targetHost}
             </div>
-
-            <p style={{ margin: "0.15rem 0", color: mutedTextColor }}>
-              Your custom domain template:
-            </p>
-            <div style={codeStyle}>
-              {userTemplate} CNAME {targetHost}
-            </div>
-
-            <p style={{ margin: "0.15rem 0", color: mutedTextColor }}>
-              Then, in the Subdomain Manager, add or update an entry:
-            </p>
-            <div style={codeStyle}>
-              key: {app.key}
-              {"\n"}label: {app.label}
-              {"\n"}baseUrl: https://{userTemplate}
-              {"\n"}unitTypes: [{app.unitTypes.join(", ")}]
-              {"\n"}queryParam: {app.queryParam}
-              {app.path ? `\npath: ${app.path}` : ""}
-            </div>
-
-            <p style={{ margin: "0.15rem 0", color: textColor }}>
-              This creates a reciprocal link: the hub can jump into{" "}
-              {app.label} for its unit types, and {app.label} can render a
-              breadcrumb back to the Geometronomics context using the same
-              registry.
+            <p style={{ margin: "0.25rem 0", color: textColor, fontSize: '0.75rem' }}>
+              After setting up the CNAME record, remember to register your new full domain (e.g., `{app.key}.your-domain.com`) in the Subdomain Manager above. This tells the system how to handle requests from your domain.
             </p>
           </div>
         );

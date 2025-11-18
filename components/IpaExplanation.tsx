@@ -6,7 +6,6 @@ interface IpaExplanationProps {
 }
 
 const IpaExplanation: React.FC<IpaExplanationProps> = ({ onOpenDeepDive }) => {
-    // FIX: Replaced `setVisualizedText` with `setActiveConcept` as it is the correct property on the context.
     const { setActiveConcept } = useTextVector();
 
     const handleOpenDeepDive = () => {

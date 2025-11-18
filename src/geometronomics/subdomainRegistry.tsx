@@ -4,7 +4,8 @@ import React, {
   useMemo,
   useState,
   useEffect,
-  ReactNode
+  ReactNode,
+  useCallback
 } from "react";
 import type { LanguageUnitType } from "./types";
 import {
@@ -149,7 +150,7 @@ export const SubdomainRegistryProvider: React.FC<{
     return actualCurrentApp;
   }, [previewAppKey, actualCurrentApp, apps]);
 
-  const addOrUpdateApp = (entry: SubdomainApp) => {
+  const addOrUpdateApp = useCallback((entry: SubdomainApp) => {
     setApps(prev => {
       const idx = prev.findIndex(a => a.key === entry.key);
       let next: SubdomainApp[];
@@ -167,9 +168,9 @@ export const SubdomainRegistryProvider: React.FC<{
       }
       return next;
     });
-  };
+  }, [manifest.apps]);
 
-  const resolveUnitTarget = (
+  const resolveUnitTarget = useCallback((
     unitType: LanguageUnitType,
     value: string
   ): string | null => {
@@ -181,9 +182,9 @@ export const SubdomainRegistryProvider: React.FC<{
       app.queryParam
     )}=${encodeURIComponent(value)}`;
     return url;
-  };
+  }, [apps]);
 
-  const getTenantTheme = (): TenantTheme => {
+  const getTenantTheme = useCallback((): TenantTheme => {
     if (currentApp?.theme) return currentApp.theme;
     // Neutral theme (hub / unknown)
     return {
@@ -194,9 +195,9 @@ export const SubdomainRegistryProvider: React.FC<{
       border: "#1f2937",
       text: "#e5e7eb"
     };
-  };
+  }, [currentApp]);
 
-  const getBackToMainUrl = (context?: {
+  const getBackToMainUrl = useCallback((context?: {
     unitType?: LanguageUnitType;
     value?: string;
     shapeId?: string;
@@ -212,7 +213,7 @@ export const SubdomainRegistryProvider: React.FC<{
     }
     const query = params.toString();
     return query ? `${base}?${query}` : base;
-  };
+  }, [mainAppBaseUrl]);
 
   const value: SubdomainRegistryContextValue = useMemo(
     () => ({

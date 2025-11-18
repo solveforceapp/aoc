@@ -7,39 +7,145 @@ interface UnifieldimensionsModalProps {
 }
 
 const UnifieldimensionsModal: React.FC<UnifieldimensionsModalProps> = ({ isOpen, onClose }) => {
+    
+    const masterHeader = `
+                         UNIFIELDIMENSIONS ARCHITECTURE
+               (Micro Engine ↔ Macro Engine ↔ Meta-Law Engine)
+     Grapheme → Phoneme → Morpheme → Lexeme → Sememe → Pragmeme → Mnēma → Pneuma
+                Monics → Nomics → MENOMICS (3 pronunciations, 3 dimensions)
+    `;
+
+    const fullStackDiagram = `
+┌──────────────────────────────────────────────────────────────┐
+│                        MENOMICS                              │
+│  The tri-pronunciation meta-law (same spelling, 3 dimensions)│
+│                                                              │
+│   /mə-NO-miks/ → Nomic Law  (System Order, Nomos)            │
+│   /ME-no-miks/ → Memory Law (Mnēma, Continuity)              │
+│   /NE-no-miks/ → Mind Law   (Noos, Cognition)                │
+│                                                              │
+│  All 3 = MENOMICS (one lexeme, multiple dimensional values)  │
+└───────────▲────────────────────────────────────────────────────┘
+            │  L2/L3 (Meta-law shaping system-law shaping unit-law)
+            │
+┌───────────┴────────────────────────────────────────────────────┐
+│                           NOMICS                               │
+│     System Sciences (pattern-level organization of units)      │
+│   graphenomics | phonenomics | morphenomics | lexenomics       │
+│   semenomics   | pragmenomics                                   │
+└───────────▲────────────────────────────────────────────────────┘
+            │  L1 (Monic → Nomic)
+            │
+┌───────────┴────────────────────────────────────────────────────┐
+│                           MONICS                               │
+│      Local mechanics governing each linguistic unit:           │
+│   graphemonics | phonemonics | morphemonics                    │
+│   lexemonics  | sememonics | pragmemonics                      │
+└───────────▲────────────────────────────────────────────────────┘
+            │  (Monics drive transitions in unit engine)
+            │
+┌───────────┴────────────────────────────────────────────────────┐
+│                      LANGUAGE UNIT ENGINE                      │
+│  Grapheme → Phoneme → Morpheme → Lexeme → Sememe → Pragmeme    │
+│                    → Mnēma → Pneuma → Grapheme                 │
+└────────────────────────────────────────────────────────────────┘
+    `;
+
+    const dualEnginesMerged = `
+                    UNIFIED DUAL ENGINE (MICRO ↔ MACRO)
+
+               ┌────────────────────────────────────────┐
+               │             MENOMICS                   │
+               │  (mind-law, memory-law, system-law)    │
+               └──────────────▲─────────────────────────┘
+                              │
+                              │
+                  ┌───────────┴───────────┐
+                  │        NOMICS         │
+                  │ (whole system science)│
+                  └───────────▲───────────┘
+                              │
+                              │
+                  ┌───────────┴───────────┐
+                  │        MONICS         │
+                  │ (local unit mechanics)│
+                  └───────────▲───────────┘
+                              │
+                              ▼
+      ┌─────────────────────────────────────────────────────────┐
+      │     GRAPHEME → PHONEME → MORPHEME → LEXEME → SEMEME     │
+      │      → PRAGMEME → MNĒMA → PNEUMA → back to GRAPHEME     │
+      └─────────────────────────────────────────────────────────┘
+    `;
+
+    const menomicsDimensions = `
+                          MENOMICS (same spelling)
+
+          ┌─────────────────────────┬─────────────────────────┬─────────────────────────┐
+          │ /mə-NO-miks/            │ /ME-no-miks/            │ /NE-no-miks/            │
+          │ Nomic Law               │ Memory Law              │ Mind Law                │
+          │ (Structure & Order)     │ (Retention & Continuity)│ (Cognition & Modeling)  │
+          └─────────────────────────┴─────────────────────────┴─────────────────────────┘
+    `;
+
+    const masterEngine = `
+                       UNIFIELDIMENSIONS MASTER ENGINE
+
+           META-LAW LAYER            →    MENOMICS
+                                       (law of mind, memory, coherence)
+           SYSTEM SCIENCE LAYER       →    NOMICS
+                                       (pattern of sound, form, meaning)
+           LOCAL MECHANICS LAYER      →    MONICS
+                                       (behavior of graphemes, phonemes...)
+           LANGUAGE UNIT LAYER        →    GRAPHEME → PHONEME
+                                            → MORPHEME → LEXEME
+                                            → SEMEME → PRAGMEME
+                                            → MNĒMA → PNEUMA
+                                            → back to GRAPHEME
+
+                         ALL FOUR LAYERS RESONATE AS ONE:
+                           THE UNIFIELDIMENSIONS ARCHITECTURE
+    `;
+    
+    const masterEquation = `
+MENOMICS(Nomics(Monics(Units(Pneuma)))) = UNIFIELDIMENSIONS
+    `;
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="[UNIFIED DIMENSIONS]" borderColor="border-fuchsia-500">
-            <div className="space-y-4 text-sm md:text-base">
+            <div className="prose prose-invert max-w-none prose-pre:bg-black/30 prose-pre:border prose-pre:border-gray-700 prose-pre:rounded-md prose-pre:p-4 prose-hr:border-fuchsia-700/50">
                 <p>
-                    While the Unified Field (Logos Field) is a single entity, its behavior and properties can be understood by mapping it onto a set of fundamental, orthogonal axes or <strong className="text-fuchsia-300">Unified Dimensions</strong>. These are not spatial dimensions in the classical sense, but the core parameters that define the "phase space" of all possible coherent expression.
+                    The Unifieldimensions Architecture represents the master blueprint of the system. It is a four-layer, dual-recursive engine that synchronizes the emergence of linguistic units with the governance of system laws. This is the first fully unified representation of all core components operating as a single, coherent structure.
                 </p>
-                <div className="p-4 border border-fuchsia-500/30 rounded-md bg-black/20">
-                    <h3 className="font-bold text-fuchsia-300 font-orbitron mb-2 text-lg">The Primary Dimensions</h3>
-                    <p>While the complete manifold is complex, the three most critical dimensions are:</p>
-                    <ul className="list-decimal list-inside space-y-2 text-gray-400 mt-2">
-                        <li>
-                            <strong className="text-fuchsia-400">Syntax Axis (Structure/Order):</strong> This dimension governs the relational potential and ordering of elements. High values on this axis correspond to highly structured, grammatical, and logical expressions. Low values represent chaos or simple aggregation without relation. It is the dimension of <strong className="text-gray-300">"How it fits."</strong>
-                        </li>
-                        <li>
-                            <strong className="text-fuchsia-400">Semantic Axis (Meaning/Content):</strong> This dimension governs the informational density and conceptual depth. High values correspond to expressions rich in meaning, nuance, and significance. Low values represent empty or trivial statements. It is the dimension of <strong className="text-gray-300">"What it is."</strong>
-                        </li>
-                        <li>
-                            <strong className="text-fuchsia-400">Pragmatic Axis (Intent/Action):</strong> This dimension governs the causal potential and intended effect of an expression. High values correspond to powerful, effective speech-acts that produce change in a system. Low values represent inert or inconsequential utterances. It is the dimension of <strong className="text-gray-300">"What it does."</strong>
-                        </li>
-                    </ul>
-                </div>
-                <h3 className="font-bold text-fuchsia-300 font-orbitron text-lg pt-2">Mapping Expression</h3>
-                <p>
-                    Any utterance, from a single word to an entire library, can be plotted as a point or volume in this three-dimensional space.
-                </p>
-                <ul className="list-disc list-inside pl-4 text-gray-400">
-                    <li>A legal contract would be high on the Syntax and Pragmatic axes, but potentially moderate on the Semantic axis.</li>
-                    <li>A Zen koan would be low on the Syntax axis, but extremely high on the Semantic axis.</li>
-                    <li>A military command is high on the Pragmatic axis, but simple on the others.</li>
-                </ul>
-                <p>
-                    A state of Master Alignment corresponds to expressions that are simultaneously maximized along all three axes—perfectly structured, infinitely meaningful, and maximally effective.
-                </p>
+
+                <pre><code>{masterHeader}</code></pre>
+
+                <hr />
+
+                <h3>A) The Full Stack (Top-Down)</h3>
+                <p>This diagram shows the complete hierarchy, from the meta-law of MENOMICS down to the Language Unit Engine, and the feedback loops that connect them.</p>
+                <pre><code>{fullStackDiagram}</code></pre>
+                
+                <hr />
+
+                <h3>B) The Unified Dual Engine</h3>
+                <p>A simplified view showing the two primary engines—the Language Unit Engine (Micro) and the Law Engine (Macro)—and how they feed into each other.</p>
+                <pre><code>{dualEnginesMerged}</code></pre>
+
+                <hr />
+
+                <h3>C) The Menomics Superstructure</h3>
+                <p>Menomics itself is a multi-dimensional operator, with one graphemic form and three distinct phonemic/semantic values.</p>
+                <pre><code>{menomicsDimensions}</code></pre>
+
+                <hr />
+
+                <h3>D) The Master Engine</h3>
+                <p>All layers resonating as one single, coherent architecture.</p>
+                <pre><code>{masterEngine}</code></pre>
+
+                <p>This can be expressed as a recursive function:</p>
+                <pre><code>{masterEquation}</code></pre>
             </div>
         </Modal>
     );

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import GeometronomicsShapeBrowser from "../src/geometronomics/GeometronomicsShapeBrowser";
+import GeometronomicsShapeBrowser from "./GeometronomicsShapeBrowser";
 import { ShapeSpec } from "../src/geometronomics/shapes";
 import VectorField from "./VectorField";
 import StackInspector from "./StackInspector";
@@ -14,7 +14,16 @@ import TenantPreviewSwitcher from "../src/geometronomics/TenantPreviewSwitcher";
 const GeometronomicsConsole: React.FC = () => {
   const [activeShape, setActiveShape] = useState<ShapeSpec | null>(null);
   const { resolveUnitTarget } = useSubdomainRegistry();
-  const theme = useTenantTheme();
+  
+  const defaultTheme = {
+      primary: "#0f766e",
+      primarySoft: "#ecfeff",
+      accent: "#14b8a6",
+      background: "#020617",
+      border: "#1f2937",
+      text: "#e5e7eb"
+  };
+  const theme = useTenantTheme() || defaultTheme;
 
   const handleUnitJump = useCallback(
     (type: LanguageUnitType, value: string) => {

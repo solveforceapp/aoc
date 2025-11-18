@@ -9,9 +9,11 @@ interface ModalProps {
     children: React.ReactNode;
     borderColor?: string;
     onDownloadDocx?: () => void;
+    onDownloadMd?: () => void;
+    onCopyLink?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, borderColor = 'border-gray-500', onDownloadDocx }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, borderColor = 'border-gray-500', onDownloadDocx, onDownloadMd, onCopyLink }) => {
     const { openModal } = useModal();
     if (!isOpen) return null;
 
@@ -20,74 +22,63 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, borderC
     const contentRef = useRef<HTMLDivElement>(null);
 
     const handlePrint = () => {
-        if (!contentRef.current) return;
-
-        const contentToPrint = contentRef.current.cloneNode(true) as HTMLElement;
-        
-        const iframe = document.createElement('iframe');
-        iframe.style.position = 'absolute';
-        iframe.style.width = '0';
-        iframe.style.height = '0';
-        iframe.style.border = 'none';
-        document.body.appendChild(iframe);
-
-        const doc = iframe.contentWindow?.document;
-        if (!doc) {
-            document.body.removeChild(iframe);
-            console.error("Could not get iframe document for printing.");
+        if (!contentRef.current) {
+            console.error("Print failed: Modal content reference is not available.");
+            alert('Could not capture content for printing. Please try again or report this issue.');
             return;
         }
-        
-        const printStyles = `
-            <link rel="preconnect" href="https://fonts.googleapis.com">
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-            <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
-            <style>
-                body { font-family: 'Roboto', sans-serif; color: #000; margin: 2rem; }
-                h1, h2, h3, h4, h5, h6 { font-family: 'Orbitron', sans-serif; color: black; page-break-after: avoid; }
-                h1 { font-size: 24pt; border-bottom: 2px solid #ccc; padding-bottom: 8px; margin-bottom: 16px; }
-                h2 { font-size: 20pt; margin-top: 1.5rem; border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 1rem; }
-                h3 { font-size: 16pt; margin-top: 1.2rem; }
-                h4 { font-size: 14pt; margin-top: 1rem; }
-                p, li { font-size: 12pt; line-height: 1.6; color: #333; widows: 3; orphans: 3; }
-                ul, ol { page-break-inside: avoid; padding-left: 2rem; }
-                a { color: #555; text-decoration: underline; }
-                strong { font-weight: bold; }
-                em { font-style: italic; }
-                .hide-on-print { display: none !important; }
-            </style>
-        `;
+        const contentToPrint = contentRef.current.innerHTML;
+        const titleToPrint = title;
 
-        doc.open();
-        doc.write(`
+        const printWindow = window.open('', '', 'height=800,width=1000');
+        if (!printWindow) {
+            alert("Could not open print window. Please check your popup blocker settings.");
+            return;
+        }
+
+        const tailwindConfigString = JSON.stringify((window as any).tailwind.config);
+
+        printWindow.document.write(`
             <html>
             <head>
-                <title>${title}</title>
-                ${printStyles}
+                <title>${titleToPrint}</title>
+                <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+                <script>
+                    tailwind.config = ${tailwindConfigString};
+                </script>
+                <style>
+                    body { font-family: 'Roboto', sans-serif; margin: 2rem; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .print-light { --tw-prose-body: #374151; --tw-prose-headings: #111827; --tw-prose-lead: #4b5563; --tw-prose-links: #1d4ed8; --tw-prose-bold: #111827; --tw-prose-counters: #6b7280; --tw-prose-bullets: #374151; --tw-prose-hr: #e5e7eb; --tw-prose-quotes: #111827; --tw-prose-quote-borders: #e5e7eb; --tw-prose-captions: #6b7280; --tw-prose-code: #111827; --tw-prose-pre-code: #111827; --tw-prose-pre-bg: #f3f4f6; --tw-prose-th-borders: #d1d5db; --tw-prose-td-borders: #e5e7eb; }
+                    pre, .prose pre { background-color: #f3f4f6 !important; color: #111827 !important; border: 1px solid #d1d5db !important; white-space: pre-wrap; word-break: break-all; }
+                    .hide-on-print { display: none !important; }
+                </style>
             </head>
             <body>
-                <h1>${title}</h1>
-                ${contentToPrint.innerHTML}
+                <div class="prose print-light">
+                    <h1>${titleToPrint}</h1>
+                    ${contentToPrint}
+                </div>
             </body>
             </html>
         `);
-        doc.close();
-        
-        setTimeout(() => {
-            try {
-                iframe.contentWindow?.focus();
-                iframe.contentWindow?.print();
-            } catch (e) {
-                console.error("Printing failed:", e);
-            }
-            // The iframe is removed in a separate, longer timeout to allow the print dialog to fully process.
-            setTimeout(() => { document.body.removeChild(iframe); }, 1000);
-        }, 250);
+
+        printWindow.document.close();
+        printWindow.onload = function() {
+            setTimeout(function() { 
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            }, 500);
+        };
     };
 
     const handleDownload = () => {
-        if (contentRef.current) {
-            const markdownContent = `# ${title}\n\n${contentRef.current.innerText}`;
+        const contentElement = contentRef.current;
+        if (contentElement) {
+            const markdownContent = `# ${title}\n\n${contentElement.textContent || ''}`;
             const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -97,6 +88,9 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, borderC
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        } else {
+            console.error("Download failed: Modal content reference is not available.");
+            alert('Could not capture content for download. Please try again or report this issue.');
         }
     };
 
@@ -137,8 +131,11 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, borderC
                         <span className="bracket">[</span>+ Create Treatise<span className="bracket">]</span>
                     </button>
                     <div className="flex gap-2">
+                        {onCopyLink && (
+                             <button onClick={onCopyLink} className="text-xs px-3 py-1.5 border border-gray-600 rounded-md hover:bg-gray-700 hover:text-white transition-colors text-gray-400">Copy Link</button>
+                        )}
                         <button onClick={handlePrint} className="text-xs px-3 py-1.5 border border-gray-600 rounded-md hover:bg-gray-700 hover:text-white transition-colors text-gray-400">Print</button>
-                        <button onClick={handleDownload} className="text-xs px-3 py-1.5 border border-gray-600 rounded-md hover:bg-gray-700 hover:text-white transition-colors text-gray-400">Download (.md)</button>
+                        <button onClick={onDownloadMd || handleDownload} className="text-xs px-3 py-1.5 border border-gray-600 rounded-md hover:bg-gray-700 hover:text-white transition-colors text-gray-400">Download (.md)</button>
                         {onDownloadDocx && (
                             <button onClick={onDownloadDocx} className="text-xs px-3 py-1.5 border border-gray-600 rounded-md hover:bg-gray-700 hover:text-white transition-colors text-gray-400">Download (.docx)</button>
                         )}
@@ -147,7 +144,6 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, borderC
             </div>
         </div>
     );
-
     return createPortal(modalMarkup, document.body);
 };
 

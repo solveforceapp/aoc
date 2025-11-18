@@ -4,7 +4,12 @@ import { useModal } from '../src/context/ModalContext';
 import { GoogleGenAI, Type } from '@google/genai';
 import { useCodex } from '../src/context/CodexContext';
 import MarkdownRenderer from './common/MarkdownRenderer';
+// FIX: Corrected import path for useSystemContext
 import { useSystemContext } from '../contexts/SystemContext';
+import { Document, Packer, Paragraph, HeadingLevel, TextRun, AlignmentType } from 'docx';
+
+// The file-saver package is loaded via importmap, attaching saveAs to the global scope.
+declare var saveAs: (blob: Blob, filename: string) => void;
 
 interface Chapter {
     chapterTitle: string;
@@ -93,11 +98,11 @@ const GenesisEngineModal: React.FC<{ isOpen: boolean; onClose: () => void; }> = 
 
     const [result, setResult] = useState<Treatise | null>(null);
     const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
-    const [isAutoGeneratingChapters, setIsAutoGeneratingChapters] = useState(false);
     const [isAutoGenerating, setIsAutoGenerating] = useState(false);
     const autoGenerateQueue = useRef<number[]>([]);
     const [loadingChapterIndex, setLoadingChapterIndex] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [isAutoGeneratingChapters, setIsAutoGeneratingChapters] = useState(false);
 
     const totalWordCount = useMemo(() => {
         if (!result) return 0;
@@ -228,7 +233,7 @@ const GenesisEngineModal: React.FC<{ isOpen: boolean; onClose: () => void; }> = 
             };
 
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
+                model: 'gemini-2.5-pro',
                 contents: prompt,
                 config: {
                     responseMimeType: 'application/json',
@@ -434,81 +439,130 @@ const GenesisEngineModal: React.FC<{ isOpen: boolean; onClose: () => void; }> = 
         autoGenerateQueue.current = [];
         setIsAutoGenerating(false);
     };
-    
-    const handleDownloadDocx = () => {
+
+    const handleDownloadMd = () => {
         if (!result) return;
-        const title = result.treatiseTitle;
-
-        const markdownToHtmlForDocx = (markdown: string): string => {
-            if (!markdown) return '';
-            const blockifiedMarkdown = markdown.replace(/\n(#+\s)/g, '\n\n$1');
-            const withSoftBreaks = blockifiedMarkdown.replace(/\n(?!\s*\n|\s*[-*+•]|\s*\d+\.)/g, '<br/>');
-            const blocks = withSoftBreaks.split(/\n\s*\n/);
-
-            const htmlBlocks = blocks.map(block => {
-                const trimmedBlock = block.trim();
-                if (!trimmedBlock) return '';
-                if (trimmedBlock.startsWith('### ')) return `<h3>${trimmedBlock.substring(4)}</h3>`;
-                if (trimmedBlock.startsWith('## ')) return `<h2>${trimmedBlock.substring(3)}</h2>`;
-                if (trimmedBlock.startsWith('# ')) return `<h1>${trimmedBlock.substring(2)}</h1>`;
-                const isList = trimmedBlock.match(/^(\s*[-*+•]|\s*\d+\.)/m);
-                if (isList) {
-                    const listType = /^\s*\d+\./.test(trimmedBlock) ? 'ol' : 'ul';
-                    const items = trimmedBlock.split('\n').map(item => {
-                        const content = item.replace(/^(\s*[-*+•]|\s*\d+\.)\s*/, '').trim();
-                        return content ? `<li>${content}</li>` : '';
-                    }).join('');
-                    return `<${listType}>${items}</${listType}>`;
+        const { treatiseTitle, introduction, chapters } = result;
+    
+        const markdownContent = [
+            `# ${treatiseTitle}`,
+            '',
+            '## Introduction',
+            introduction,
+            ...chapters.flatMap((chap, i) => [
+                '',
+                `## Chapter ${i + 1}: ${chap.chapterTitle}`,
+                chap.content || '[Content not yet generated]'
+            ])
+        ].join('\n\n');
+    
+        const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+        const filename = `${treatiseTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`;
+        saveAs(blob, filename);
+    };
+    
+    const handleDownloadDocx = async () => {
+        if (!result) return;
+        const { treatiseTitle, introduction, chapters } = result;
+    
+        const parseMarkdownToParagraphs = (md: string): Paragraph[] => {
+            if (!md) {
+                return [new Paragraph({ children: [new TextRun({ text: '[Content not yet generated]', italics: true })] })];
+            }
+    
+            const paragraphs: Paragraph[] = [];
+            const lines = md.split('\n');
+    
+            for (const raw of lines) {
+                const line = raw.trimEnd();
+    
+                const createTextRuns = (text: string) => {
+                    return text.split(/(\*\*.*?\*\*|\*.*?\*)/g).filter(Boolean).map(part => {
+                        if (part.startsWith('**') && part.endsWith('**')) {
+                            return new TextRun({ text: part.slice(2, -2), bold: true });
+                        }
+                        if (part.startsWith('*') && part.endsWith('*')) {
+                            return new TextRun({ text: part.slice(1, -1), italics: true });
+                        }
+                        return new TextRun(part);
+                    });
                 }
-                return `<p>${trimmedBlock}</p>`;
-            });
-
-            let finalHtml = htmlBlocks.join('');
-            finalHtml = finalHtml
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>');
-            return finalHtml;
+    
+                const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
+                if (headingMatch) {
+                    const level = headingMatch[1].length;
+                    const text = headingMatch[2];
+                    const headingLevelMap: { [key: number]: HeadingLevel } = {
+                        1: HeadingLevel.HEADING_1,
+                        2: HeadingLevel.HEADING_2,
+                        3: HeadingLevel.HEADING_3,
+                        4: HeadingLevel.HEADING_4,
+                        5: HeadingLevel.HEADING_5,
+                        6: HeadingLevel.HEADING_6,
+                    };
+                    paragraphs.push(new Paragraph({ children: createTextRuns(text), heading: headingLevelMap[level] }));
+                } else if (line.startsWith('> ')) {
+                    paragraphs.push(new Paragraph({ children: createTextRuns(line.substring(2)), style: 'IntenseQuote' }));
+                } else if (line.match(/^(\*|-)\s/)) {
+                    paragraphs.push(new Paragraph({ children: createTextRuns(line.replace(/^(\*|-)\s*/, '')), bullet: { level: 0 } }));
+                } else if (line.match(/^\d+\.\s/)) {
+                    paragraphs.push(new Paragraph({ children: createTextRuns(line.replace(/^\d+\.\s*/, '')), numbering: { reference: 'default-numbering', level: 0 } }));
+                } else if (line.trim()) {
+                    paragraphs.push(new Paragraph({ children: createTextRuns(line) }));
+                } else {
+                    paragraphs.push(new Paragraph('')); // Blank line
+                }
+            }
+            return paragraphs;
         };
-        
-        let htmlContent = `
-            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-            <head>
-                <meta charset='utf-8'>
-                <title>${title}</title>
-                <style>
-                    body { font-family: Calibri, sans-serif; font-size: 11pt; line-height: 1.5; }
-                    h1 { font-family: 'Orbitron', Calibri, sans-serif; font-size: 24pt; font-weight: bold; margin-bottom: 20px; }
-                    h2 { font-family: 'Orbitron', Calibri, sans-serif; font-size: 18pt; font-weight: bold; margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
-                    h3 { font-family: 'Orbitron', Calibri, sans-serif; font-size: 14pt; font-weight: bold; margin-top: 18px; margin-bottom: 8px; }
-                    p { margin: 0 0 12px 0; }
-                    ul, ol { margin-top: 0; margin-bottom: 12px; padding-left: 40px; }
-                    li { margin-bottom: 6px; }
-                    strong { font-weight: bold; }
-                    em { font-style: italic; }
-                    hr { page-break-after: always; border: 0; }
-                </style>
-            </head>
-            <body>
-                <h1>${title}</h1>
-                <h2>Introduction</h2>
-                ${markdownToHtmlForDocx(result.introduction || '<i>[Content not yet generated]</i>')}
-                ${result.chapters.map((chap, i) => `
-                <hr />
-                <h2>Chapter ${i+1}: ${chap.chapterTitle}</h2>
-                ${markdownToHtmlForDocx(chap.content || '<i>[Content not yet generated]</i>')}
-                `).join('')}
-            </body>
-            </html>`;
-
-        const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.doc`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+    
+        const docChildren: Paragraph[] = [
+            new Paragraph({ text: treatiseTitle, heading: HeadingLevel.TITLE, alignment: AlignmentType.CENTER }),
+            new Paragraph({ text: 'Introduction', heading: HeadingLevel.HEADING_1 }),
+            ...parseMarkdownToParagraphs(introduction),
+        ];
+    
+        chapters.forEach((chap, i) => {
+            docChildren.push(new Paragraph({ text: `Chapter ${i + 1}: ${chap.chapterTitle}`, heading: HeadingLevel.HEADING_1, pageBreakBefore: true }));
+            docChildren.push(...parseMarkdownToParagraphs(chap.content));
+        });
+    
+        const doc = new Document({
+            numbering: {
+                config: [
+                    {
+                        reference: 'default-numbering',
+                        levels: [{
+                            level: 0,
+                            format: 'decimal',
+                            text: '%1.',
+                            start: 1,
+                            alignment: AlignmentType.START,
+                            style: {
+                                paragraph: {
+                                    indent: { left: 720, hanging: 360 },
+                                },
+                            },
+                        }],
+                    },
+                ],
+            },
+            sections: [{ children: docChildren }],
+            styles: {
+                paragraphStyles: [
+                    {
+                        id: "IntenseQuote",
+                        name: "Intense Quote",
+                        basedOn: "Normal",
+                        next: "Normal",
+                        run: { italics: true, color: "5A5A5A" },
+                    },
+                ],
+            },
+        });
+    
+        const blob = await Packer.toBlob(doc);
+        saveAs(blob, `${treatiseTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.docx`);
     };
 
     const renderSetupView = () => (
@@ -647,7 +701,7 @@ const GenesisEngineModal: React.FC<{ isOpen: boolean; onClose: () => void; }> = 
     );
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="[GENESIS ENGINE]" borderColor="border-amber-500" onDownloadDocx={result ? handleDownloadDocx : undefined}>
+        <Modal isOpen={isOpen} onClose={onClose} title="[GENESIS ENGINE]" borderColor="border-amber-500" onDownloadMd={result ? handleDownloadMd : undefined} onDownloadDocx={result ? handleDownloadDocx : undefined}>
             <div className="flex flex-col md:flex-row gap-6 h-[75vh]">
                 {view === 'setup' && renderSetupView()}
                 
@@ -662,7 +716,7 @@ const GenesisEngineModal: React.FC<{ isOpen: boolean; onClose: () => void; }> = 
 
                     {view === 'setup' && !isGeneratingOutline && (
                         <div className="flex items-center justify-center h-full text-gray-600 hide-on-print">
-                            <p className="font-orbitron text-center">DEFINE AND GENERATE A TREATISE</p>
+                            <p className="font-orbitron">DEFINE AND GENERATE A TREATISE</p>
                         </div>
                     )}
                      {error && <p className="text-red-400 text-center text-xs mt-2 p-2 bg-red-900/20 rounded-md whitespace-pre-wrap">{error}</p>}

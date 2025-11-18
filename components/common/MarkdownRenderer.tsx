@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react';
+// FIX: Corrected import path for useSystemContext
+import { useSystemContext } from '../../contexts/SystemContext';
 
 const escapeHtml = (unsafe: string) => {
     return unsafe
@@ -104,7 +106,7 @@ const MarkdownRenderer: React.FC<{ content: string; className?: string, isStream
                         break; // End of list
                     }
                 }
-                listHtml += '</ol>';
+                listHtml += '</ul>';
                 htmlParts.push(listHtml);
                 continue;
             }

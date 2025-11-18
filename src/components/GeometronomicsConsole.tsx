@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from "react";
-import GeometronomicsShapeBrowser from "./GeometronomicsShapeBrowser";
+import GeometronomicsShapeBrowser from "../geometronomics/GeometronomicsShapeBrowser";
 import { ShapeSpec } from "../geometronomics/shapes";
-import VectorField from "./VectorField";
+import VectorField from "../../components/VectorField";
 import StackInspector from "./StackInspector";
 import LanguageUnitsStackOverlay from "./LanguageUnitsStackOverlay";
 import { LanguageUnitType } from "../geometronomics/types";
@@ -14,7 +14,16 @@ import TenantPreviewSwitcher from "../geometronomics/TenantPreviewSwitcher";
 const GeometronomicsConsole: React.FC = () => {
   const [activeShape, setActiveShape] = useState<ShapeSpec | null>(null);
   const { resolveUnitTarget } = useSubdomainRegistry();
-  const theme = useTenantTheme();
+  
+  const defaultTheme = {
+      primary: "#0f766e",
+      primarySoft: "#ecfeff",
+      accent: "#14b8a6",
+      background: "#020617",
+      border: "#1f2937",
+      text: "#e5e7eb"
+  };
+  const theme = useTenantTheme() || defaultTheme;
 
   const handleUnitJump = useCallback(
     (type: LanguageUnitType, value: string) => {
@@ -46,6 +55,8 @@ const GeometronomicsConsole: React.FC = () => {
           border: `1px solid ${theme.border}`,
           background: "rgba(15,23,42,0.7)",
           backdropFilter: "blur(10px)",
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
         <GeometronomicsShapeBrowser onShapeSelect={setActiveShape} />
@@ -68,8 +79,13 @@ const GeometronomicsConsole: React.FC = () => {
           }}
         >
           <h3
-            className="m-0 mb-[0.35rem] text-[0.95rem] font-orbitron"
-            style={{ color: theme.primary }}
+            style={{
+              margin: 0,
+              marginBottom: "0.35rem",
+              fontSize: "0.95rem",
+              fontFamily: "'Orbitron', 'sans-serif'",
+              color: theme.primary,
+            }}
           >
             Vector Field
           </h3>
@@ -100,8 +116,13 @@ const GeometronomicsConsole: React.FC = () => {
           }}
         >
           <h3
-            className="m-0 mb-[0.35rem] text-[0.95rem] font-orbitron"
-            style={{ color: theme.primary }}
+            style={{
+              margin: 0,
+              marginBottom: "0.35rem",
+              fontSize: "0.95rem",
+              fontFamily: "'Orbitron', 'sans-serif'",
+              color: theme.primary,
+            }}
           >
             Stack Inspector
           </h3>

@@ -326,7 +326,6 @@ export function useProgramPlayer(
 
       const runStep = (index: number) => {
         // Termination condition for non-looping modes
-        // FIX: Refactored condition to be more explicit and avoid redundant type checks.
         if (
           (mode === 'normal' && index >= program.steps.length) ||
           (mode === 'reverse' && index < 0)

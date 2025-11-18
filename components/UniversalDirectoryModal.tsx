@@ -1,249 +1,226 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, {
+  useRef,
+  useMemo,
+  useCallback,
+  useEffect,
+} from 'react';
 import Modal from './common/Modal';
 import { useCodex } from '../src/context/CodexContext';
-import { CodexEntry } from '../src/types';
-import MarkdownRenderer from './common/MarkdownRenderer';
+import { CodexEntry, ModalKey } from '../src/types';
+import { useAudit } from '../contexts/AuditContext';
+import { useModal } from '../src/context/ModalContext';
 
-// Data is defined within the component file due to file system constraints.
-interface DirectoryKey {
-  glyph: string;
-  bindings: string[];
-  systemFunction: string;
-  semanticField: string;
-}
-
-const ALPHABET_DIRECTORY: DirectoryKey[] = [
-    { glyph: 'A', bindings: ['Autonomics', 'Astromomics', 'Axiomonomics'], systemFunction: 'Primary index starter; invoke origin states', semanticField: 'Beginning, source, ascent' },
-    { glyph: 'B', bindings: ['Bionomics', 'Biblionomics'], systemFunction: 'Binary roots, branching logic', semanticField: 'Birth, becoming, bifurcation' },
-    { glyph: 'C', bindings: ['Codexonomics', 'Cybernomics', 'Cognomics', 'Chronomics'], systemFunction: 'Categories, circuits, coherence calls', semanticField: 'Continuity, connection, cause' },
-    { glyph: 'D', bindings: ['Dynamonomics', 'DataNomics', 'Dialectonomics'], systemFunction: 'Directional operations, delta-shifts', semanticField: 'Difference, driving force, design' },
-    { glyph: 'E', bindings: ['Elemenomics', 'Energenomics', 'Etymonomics'], systemFunction: 'Extraction/essence lookups', semanticField: 'Energy, essence, emergence' },
-    { glyph: 'F', bindings: ['Filamenomics', 'Frequenomics'], systemFunction: 'Frequency maps, fractal expansion', semanticField: 'Flow, formation, filament' },
-    { glyph: 'G', bindings: ['Geonomics', 'Graphemics', 'Geometronomics'], systemFunction: 'Geometry engines, grounding routines', semanticField: 'Gravity, grounding, generativity' },
-    { glyph: 'H', bindings: ['Harmonomics', 'Hermenomics', 'Healthonomics'], systemFunction: 'Harmonic balancing, error smoothing', semanticField: 'Harmony, healing, hierarchy' },
-    { glyph: 'I', bindings: ['Infonomics', 'Immunomics', 'Icononomics'], systemFunction: 'Inference engine calls', semanticField: 'Insight, identity, interrelation' },
-    { glyph: 'J', bindings: ['Juronomics', 'Justonomics'], systemFunction: 'Justice rules, relational arbitration', semanticField: 'Judgment, joining, justification' },
-    { glyph: 'K', bindings: ['Kinetonomics', 'Kodexonomics'], systemFunction: 'Motion rules, keybindings', semanticField: 'Kinesis, knowing, keys' },
-    { glyph: 'L', bindings: ['Logonomics', 'Lanomics', 'Leganomics'], systemFunction: 'Linguistic lookup core (central module)', semanticField: 'Logos, lineage, law' },
-    { glyph: 'M', bindings: ['Magnomics', 'Morphonics', 'Motionomics'], systemFunction: 'Memory maps, morph chain expansion', semanticField: 'Matter, mind, modulation' },
-    { glyph: 'N', bindings: ['Nomosynomics', 'Nomenomics', 'Neuronomics'], systemFunction: 'Naming system, nervous-system logic', semanticField: 'Name, nexus, nuance' },
-    { glyph: 'O', bindings: ['Onomics', 'Originomics', 'Oscillonomics'], systemFunction: 'Oscillation, oxygenation, omnidirectional calls', semanticField: 'Opening, orbit, origin' },
-    { glyph: 'P', bindings: ['Patternomics', 'Pulmonomics', 'Pressuronomics'], systemFunction: 'Pattern recognition, pressure balancing', semanticField: 'Pulse, pattern, power' },
-    { glyph: 'Q', bindings: ['Quantonomics', 'Quantumonomics'], systemFunction: 'Query systems, quantum state switching', semanticField: 'Question, quality, quanta' },
-    { glyph: 'R', bindings: ['Recognomics', 'Resonomics', 'Regeneronomics'], systemFunction: 'Resonant recall, recursion systems', semanticField: 'Return, recursion, remembrance' },
-    { glyph: 'S', bindings: ['Scienomics', 'Sweatononomics', 'Syntaxonomics'], systemFunction: 'Sequencing logic, syntactic correctness', semanticField: 'Structure, sound, sense' },
-    { glyph: 'T', bindings: ['Technonomics', 'Thermonomics', 'Terminomics'], systemFunction: 'Temperature maps, terminus routing', semanticField: 'Time, temperature, threshold' },
-    { glyph: 'U', bindings: ['Unomics', 'Unisonomics'], systemFunction: 'Universal call layer', semanticField: 'Union, universality, upward motion' },
-    { glyph: 'V', bindings: ['Vitalonomics', 'Vowelonomics'], systemFunction: 'Vowel engine, vitality mapping', semanticField: 'Voice, vitality, vibration' },
-    { glyph: 'W', bindings: ['Wavenomics', 'Wordonomics'], systemFunction: 'Wave routing, waveform analysis', semanticField: 'Waves, will, wisdom' },
-    { glyph: 'X', bindings: ['Xenonomics', 'X-Chains'], systemFunction: 'Cross-domain linking', semanticField: 'Crossroads, unknowns, extensions' },
-    { glyph: 'Y', bindings: ['Yieldonomics', 'Yamonics'], systemFunction: 'Growth functions, y-axis scaling', semanticField: 'Yield, youth, yoke' },
-    { glyph: 'Z', bindings: ['Zonomics', 'Zero-Pointonomics'], systemFunction: 'Zenith lookup, zone engine calls', semanticField: 'Zenith, zone, boundary' },
-];
-
-const NUMERIC_DIRECTORY: DirectoryKey[] = [
-    { glyph: '1', bindings: ['Unomics'], systemFunction: 'Single-point resolve', semanticField: 'Unity, origin, singularity' },
-    { glyph: '2', bindings: ['Binomonomics'], systemFunction: 'Pairing, correspondence', semanticField: 'Polarity, balance, comparison' },
-    { glyph: '3', bindings: ['Trinomics'], systemFunction: 'Synthesis engine', semanticField: 'Stability, growth, revelation' },
-    { glyph: '4', bindings: ['Quadranomics'], systemFunction: 'Structural logic', semanticField: 'Order, grounding, geometry' },
-    { glyph: '5', bindings: ['Pentonomics'], systemFunction: 'Sensory mapping', semanticField: 'Life, movement, adaptability' },
-    { glyph: '6', bindings: ['Hexanomics'], systemFunction: 'Network formation', semanticField: 'Symmetry, agreement, synergy' },
-    { glyph: '7', bindings: ['Heptanomics'], systemFunction: 'Pattern cycles', semanticField: 'Wisdom, depth, return' },
-    { glyph: '8', bindings: ['Octonomics'], systemFunction: 'Infinite loops', semanticField: 'Continuum, recursion, power' },
-    { glyph: '9', bindings: ['Nonanomics'], systemFunction: 'Finalization stage', semanticField: 'Culmination, clarity, closure' },
-    { glyph: '0', bindings: ['Zero-Pointonomics'], systemFunction: 'Reset, null, infinite potential', semanticField: 'Nothing and everything' },
-];
-
-const KeyButton: React.FC<{
-    keyData: DirectoryKey;
-    onSelect: (keyData: DirectoryKey) => void;
-    isSelected: boolean;
-    hasEntries: boolean;
-}> = ({ keyData, onSelect, isSelected, hasEntries }) => (
-    <button
-        onClick={() => onSelect(keyData)}
-        className={`w-full aspect-square flex items-center justify-center text-xl font-orbitron font-bold border-2 rounded-md transition-all duration-200
-            ${isSelected 
-                ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.7)] scale-110' 
-                : hasEntries
-                ? 'bg-black/20 border-gray-500 hover:border-gray-300 hover:bg-gray-800 text-gray-200 hover:text-white' // Bright for letters with entries
-                : 'bg-black/20 border-gray-700 hover:border-gray-500 hover:bg-gray-800 text-gray-500 hover:text-gray-300' // Dim but visible for empty letters
-            }`}
-        aria-label={`Select glyph ${keyData.glyph}`}
-        aria-pressed={isSelected}
-    >
-        {keyData.glyph}
-    </button>
-);
-
-const LetterDetailDisplay: React.FC<{ selectedKey: DirectoryKey }> = ({ selectedKey }) => (
-    <div className="h-full flex flex-col justify-center animate-fade-in space-y-4 text-sm bg-black/30 p-6 rounded-lg border border-gray-700">
-        <div className="flex items-baseline justify-between pb-2 border-b border-gray-700">
-            <p className="text-gray-400 font-bold uppercase tracking-wider">Glyph:</p>
-            <p className="text-5xl font-black font-orbitron text-white">{selectedKey.glyph}</p>
-        </div>
-        <div>
-            <p className="text-gray-400 font-bold uppercase tracking-wider mb-1">Nomos/Onomics Bindings</p>
-            <p className="text-gray-200 font-mono text-base">{selectedKey.bindings.join(', ')}</p>
-        </div>
-        <div>
-            <p className="text-gray-400 font-bold uppercase tracking-wider mb-1">System Function</p>
-            <p className="text-gray-200 text-base">{selectedKey.systemFunction}</p>
-        </div>
-        <div>
-            <p className="text-gray-400 font-bold uppercase tracking-wider mb-1">Semantic Field</p>
-            <p className="text-gray-200 text-base italic">{selectedKey.semanticField}</p>
-        </div>
-    </div>
-);
-
-const EntryDetailDisplay: React.FC<{ entry: CodexEntry }> = ({ entry }) => (
-    <div className="space-y-4 animate-fade-in">
-        <div>
-            <h3 className="text-2xl font-bold text-amber-300 font-orbitron">{entry.term}</h3>
-            <p className="text-xs text-gray-500 font-mono">
-                ORIGIN: {entry.origin} // CANONIZED: {new Date(entry.timestamp).toLocaleString()}
-            </p>
-        </div>
-        <div className="p-4 bg-black/30 border border-gray-800 rounded-lg">
-            <h4 className="font-bold text-gray-300 mb-2 font-orbitron">DEFINITION</h4>
-            <MarkdownRenderer content={entry.definition} className="prose prose-sm prose-invert max-w-none" />
-        </div>
-    </div>
-);
-
+const ALPHANUMERIC_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
 
 interface UniversalDirectoryModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-}
-
-interface DirectoryState {
-  selectedKey: DirectoryKey | null;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const UniversalDirectoryModal: React.FC<UniversalDirectoryModalProps> = ({ isOpen, onClose }) => {
-    const { personalEntries, universalEntries, selectedEntryId, setSelectedEntryId } = useCodex();
-    const [directoryState, setDirectoryState] = useState<DirectoryState>({ selectedKey: null });
-    const { selectedKey } = directoryState;
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const sectionRefs = useRef<Record<string, HTMLHeadingElement | null>>({});
 
-    useEffect(() => {
-        if (isOpen) {
-            setDirectoryState({ selectedKey: null });
-            setSelectedEntryId(null);
+  const { personalEntries, universalEntries } = useCodex();
+  const { log } = useAudit();
+  const { openModal } = useModal();
+
+  const termToModalKeyMap = useMemo(() => {
+    const map = new Map<string, ModalKey>();
+    // This map must be exhaustive to prevent system coherence failures.
+    // It links lowercase terms from the directory to their specific modal keys.
+
+    // Core Principles
+    map.set('structural coherence', 'STRUCTURAL_COHERENCE');
+    map.set('holographic projection', 'HOLOGRAPHIC_PROJECTION');
+    map.set('cymatic stabilization', 'CYMATIC_STABILIZATION');
+    map.set('unified field', 'UNIFIED_FIELD');
+    map.set('the unified field', 'UNIFIED_FIELD');
+    map.set('unified dimensions', 'UNIFIELD_DIMENSIONS');
+    map.set('synchronization arc', 'SYNCHRONIZATION_ARC');
+    map.set('the synchronization arc', 'SYNCHRONIZATION_ARC');
+    map.set('master alignment', 'MASTER_ALIGNMENT');
+    map.set('structural integrity', 'STRUCTURAL_INTEGRITY');
+    map.set('linguistic integrity', 'LINGUISTIC_INTEGRITY');
+    map.set('syntactic integrity', 'SYNTACTIC_INTEGRITY');
+
+    // Meta-Science & Axiomatics
+    map.set('meta-science', 'META_SCIENCE');
+    map.set('the meta-science', 'META_SCIENCE');
+    map.set('mathematical tier', 'MATHEMATICAL_TIER');
+    map.set('the mathematical tier', 'MATHEMATICAL_TIER');
+    map.set('logos attunement', 'LOGOS_ATTUNEMENT');
+    map.set('logos', 'LOGOS_ATTUNEMENT');
+    map.set('axiomatic primacy', 'AXIOMATIC_PRIMACY');
+    map.set('axionomics', 'AXIONOMICS');
+
+    // System Architecture & -Nomics
+    map.set('adapter network', 'ADAPTER_NETWORK');
+    map.set('appronomics', 'APPRONOMICS');
+    map.set('resonance tensor', 'RESONANCE_TENSOR');
+    map.set('the resonance tensor', 'RESONANCE_TENSOR');
+    map.set('synonomics', 'SYNONOMICS');
+    map.set('regeneronomics', 'REGENERONOMICS');
+    map.set('etymonomics', 'ETYMONOMICS');
+    map.set('autonomics', 'AUTONOMICS');
+    map.set('dual-engine state machine', 'DUAL_ENGINE_STATE_MACHINE');
+    map.set('the dual-engine state machine (the loom of logos)', 'DUAL_ENGINE_STATE_MACHINE');
+    map.set('the loom of logos', 'DUAL_ENGINE_STATE_MACHINE');
+
+    // Grapheme, Glyph, Code
+    map.set('grapheme', 'GRAPHEMIC_LAW');
+    map.set('graphemic law', 'GRAPHEMIC_LAW');
+    map.set('structural truth: the law of letters', 'GRAPHEMIC_LAW');
+    map.set('the law of letters', 'GRAPHEMIC_LAW');
+    map.set('law of letters', 'GRAPHEMIC_LAW');
+    map.set('glyph code', 'GLYPH_CODE');
+    map.set('glyphs', 'GLYPH_CODE');
+    map.set('deep dive: the glyph code', 'GLYPH_CODE');
+    map.set('primordial code', 'PRIMORDIAL_CODE');
+    map.set('the final truth: the primordial code', 'PRIMORDIAL_CODE');
+
+    // Nomos/Nomics/Menomics System
+    map.set('nomos', 'NOMOS_EXPLAINED');
+    map.set('deep dive: nomos', 'NOMOS_EXPLAINED');
+    map.set('menomics', 'MENOMICS_EXPLAINED');
+    map.set('deep dive: menomics', 'MENOMICS_EXPLAINED');
+    map.set('monics', 'MONICS_PLATE');
+    map.set('monics plate', 'MONICS_PLATE');
+    map.set('the monics plate', 'MONICS_PLATE');
+    map.set('nomics plate', 'NOMICS_PLATE');
+    map.set('the nomics plate', 'NOMICS_PLATE');
+    map.set('menomics plate', 'MENOMICS_PLATE');
+    map.set('the menomics plate', 'MENOMICS_PLATE');
+
+    // Major System Modals / Tools
+    map.set('resonance field', 'RESONANCE_FIELD');
+    map.set('ω-expansion: 33-plate resonance field', 'RESONANCE_FIELD');
+    map.set('universal grammar', 'UNIVERSAL_GRAMMAR');
+    map.set('universal transduction engine', 'UNIVERSAL_GRAMMAR');
+    map.set('comma corollary', 'COMMA_COROLLARY');
+    map.set('predicate expansion engine', 'COMMA_COROLLARY');
+    map.set('genesis engine', 'GENESIS_ENGINE');
+    map.set('nomics inspector', 'NOMICS_INSPECTOR');
+    map.set('nomos & nomics registry', 'NOMICS_INSPECTOR');
+
+    return map;
+}, []);
+
+  const directoryData = useMemo<Record<string, CodexEntry[]>>(() => {
+    const data: Record<string, CodexEntry[]> = {};
+    for (const char of ALPHANUMERIC_CHARS) {
+        data[char] = [];
+    }
+
+    const allEntries = [...personalEntries, ...universalEntries];
+    allEntries.forEach((entry) => {
+        const term = (entry.term || '').trim();
+        if (!term) return;
+        const firstChar = term[0].toUpperCase();
+        if (data[firstChar]) {
+            data[firstChar].push(entry);
         }
-    }, [isOpen, setSelectedEntryId]);
+    });
 
-    const allEntries = useMemo(() => [...personalEntries, ...universalEntries], [personalEntries, universalEntries]);
+    for (const char in data) {
+        data[char].sort((a, b) => a.term.localeCompare(b.term));
+    }
+    return data;
+  }, [personalEntries, universalEntries]);
 
-    const entriesByLetter = useMemo(() => {
-        const grouped = allEntries.reduce((acc, entry) => {
-            const firstChar = entry.term[0]?.toUpperCase();
-            if (firstChar) {
-                if (!acc[firstChar]) {
-                    acc[firstChar] = [];
-                }
-                acc[firstChar].push(entry);
-            }
-            return acc;
-        }, {} as Record<string, CodexEntry[]>);
+  const handleKeyClick = useCallback((char: string) => {
+    log('ACTION', `UniversalDirectory: keyboard jump to '${char}'`);
+    const element = sectionRefs.current[char];
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [log]);
 
-        // Sort entries within each letter group
-        for (const letter in grouped) {
-            grouped[letter].sort((a, b) => a.term.localeCompare(b.term));
-        }
-        return grouped;
-    }, [allEntries]);
-
-    const filteredEntries = useMemo(() => (selectedKey ? entriesByLetter[selectedKey.glyph] || [] : []), [entriesByLetter, selectedKey]);
-    const selectedEntry = useMemo(() => allEntries.find(e => e.id === selectedEntryId) || null, [allEntries, selectedEntryId]);
+  const handleTermClick = useCallback((entry: CodexEntry) => {
+    const normalizedTerm = entry.term.toLowerCase();
+    const modalKey = termToModalKeyMap.get(normalizedTerm);
     
-    const handleLetterSelect = useCallback((keyData: DirectoryKey) => {
-        setDirectoryState({ selectedKey: keyData });
-        setSelectedEntryId(null); // Clear entry selection when a new letter is chosen
-    }, [setSelectedEntryId]);
+    if (modalKey) {
+        log('ACTION', `UniversalDirectory: Opening specific modal '${modalKey}' for: ${entry.term}`);
+        openModal(modalKey);
+    } else {
+        log('ACTION', `UniversalDirectory: Opening generic CodexEntryDetailModal for: ${entry.term}`);
+        openModal('CODEX_ENTRY_DETAIL', { entry });
+    }
+  }, [log, openModal, termToModalKeyMap]);
+  
+  useEffect(() => {
+    if (isOpen) {
+      log('SYSTEM', 'UniversalDirectory opened.');
+    }
+  }, [isOpen, log]);
 
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} title="[UNIVERSAL DIRECTORY & CODEX]" borderColor="border-gray-400">
-            <div className="flex flex-col h-[75vh]">
-                 {/* Keyboard Section */}
-                <div>
-                     <div className="grid grid-cols-7 gap-1.5" role="grid" aria-label="Alphabetical Glyphs">
-                        {ALPHABET_DIRECTORY.map(keyData => (
-                            <KeyButton 
-                                key={keyData.glyph}
-                                keyData={keyData} 
-                                onSelect={handleLetterSelect}
-                                isSelected={selectedKey?.glyph === keyData.glyph}
-                                hasEntries={!!entriesByLetter[keyData.glyph]}
-                            />
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="[UNIVERSAL DIRECTORY & CODEX]" borderColor="border-gray-400">
+      <div className="flex flex-col h-[75vh]">
+        
+        <div className="mb-4 p-3 bg-black/30 border border-cyan-400/30 rounded-lg space-y-2">
+            <p className="text-xs text-gray-400 text-center">
+                This directory is governed by{' '}
+                <button onClick={() => openModal('AUTONOMICS')} className="font-bold text-cyan-400 hover:underline">Automomics</button>,
+                the law of self-governance.
+            </p>
+        </div>
+
+        <div className="flex flex-wrap gap-1 p-2 mb-4 border border-gray-700/50 rounded-md bg-black/20 flex-shrink-0">
+            {ALPHANUMERIC_CHARS.map(char => {
+                const hasEntries = directoryData[char] && directoryData[char].length > 0;
+                return (
+                    <button
+                        key={char}
+                        onClick={() => handleKeyClick(char)}
+                        disabled={!hasEntries}
+                        className="w-8 h-8 flex items-center justify-center font-orbitron text-sm rounded bg-gray-800/50 transition-colors disabled:bg-gray-800/20 disabled:text-gray-600 enabled:hover:bg-cyan-500/30 enabled:hover:text-cyan-300"
+                        aria-label={`Jump to section ${char}`}
+                    >
+                        {char}
+                    </button>
+                );
+            })}
+        </div>
+
+        <div ref={scrollContainerRef} className="flex-grow overflow-y-auto pr-2">
+            {Object.keys(directoryData).map(char => {
+                const terms = directoryData[char];
+                if (terms.length === 0) return null;
+                return (
+                    <div key={char} className="mb-6">
+                    <h3
+                        ref={el => { sectionRefs.current[char] = el; }}
+                        className="text-2xl font-bold text-cyan-400 font-orbitron border-b border-cyan-500/20 pb-1 mb-3 sticky top-0 bg-[#0c0c0e]/80 backdrop-blur-sm z-10"
+                    >
+                        {char}
+                    </h3>
+                    <div className="space-y-2">
+                        {terms.map(term => (
+                        <button
+                            key={term.id}
+                            onClick={() => handleTermClick(term)}
+                            className="w-full text-left p-3 bg-gray-800/40 rounded-md hover:bg-cyan-500/20 transition-all duration-200 border border-transparent hover:border-cyan-500/50"
+                        >
+                            <p className="font-bold text-gray-200 font-orbitron">{term.term}</p>
+                            <p className="text-sm text-gray-400 mt-1">{term.definition}</p>
+                        </button>
                         ))}
                     </div>
-                    <div className="grid grid-cols-10 gap-1.5 mt-4 pt-4 border-t-2 border-gray-700" role="grid" aria-label="Numerical Glyphs">
-                        {NUMERIC_DIRECTORY.map(keyData => (
-                            <KeyButton 
-                                key={keyData.glyph}
-                                keyData={keyData} 
-                                onSelect={handleLetterSelect}
-                                isSelected={selectedKey?.glyph === keyData.glyph}
-                                hasEntries={!!entriesByLetter[keyData.glyph]}
-                            />
-                        ))}
                     </div>
+                );
+            })}
+             {/* FIX: Cast `arr` to access `length` property, resolving 'unknown' type error. */}
+             {Object.values(directoryData).every(arr => (arr as any[]).length === 0) && (
+                <div className="flex items-center justify-center h-full text-gray-600">
+                    <p className="font-orbitron text-center">DIRECTORY IS EMPTY</p>
                 </div>
-
-                <hr className="my-4 border-gray-600/50" />
-
-                {/* Content Section */}
-                <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 min-h-0">
-                    {/* Left Panel: Entry List */}
-                    <div className="overflow-y-auto pr-2 border-r border-gray-700/50">
-                        {selectedKey ? (
-                            filteredEntries.length > 0 ? (
-                                <div className="space-y-1">
-                                    <h3 className="text-lg font-orbitron text-gray-300 mb-2">Entries for '{selectedKey.glyph}'</h3>
-                                    {filteredEntries.map(entry => (
-                                        <button
-                                            key={entry.id}
-                                            onClick={() => setSelectedEntryId(entry.id)}
-                                            className={`w-full text-left p-2 rounded-md transition-all duration-200 text-sm ${
-                                                selectedEntryId === entry.id
-                                                    ? 'bg-amber-400/20 text-amber-300'
-                                                    : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'
-                                            }`}
-                                        >
-                                            <p className="font-bold truncate font-orbitron">{entry.term}</p>
-                                            <p className="text-xs text-gray-500">{entry.origin}</p>
-                                        </button>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="flex items-center justify-center h-full text-gray-600">
-                                    <p className="font-orbitron text-center">No Codex entries found for '{selectedKey.glyph}'.</p>
-                                </div>
-                            )
-                        ) : (
-                            <div className="flex items-center justify-center h-full text-gray-600">
-                                <p className="font-orbitron text-center">SELECT A LETTER TO BROWSE THE CODEX</p>
-                            </div>
-                        )}
-                    </div>
-                    {/* Right Panel: Detail View */}
-                    <div className="overflow-y-auto pl-2" role="region" aria-live="polite">
-                        {selectedEntry ? (
-                            <EntryDetailDisplay entry={selectedEntry} />
-                        ) : selectedKey ? (
-                            <LetterDetailDisplay selectedKey={selectedKey} />
-                        ) : (
-                            <div className="flex items-center justify-center h-full text-gray-600">
-                                <p className="font-orbitron text-center">SELECT AN ENTRY TO VIEW DETAILS</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        </Modal>
-    );
+            )}
+        </div>
+      </div>
+    </Modal>
+  );
 };
 
 export default UniversalDirectoryModal;

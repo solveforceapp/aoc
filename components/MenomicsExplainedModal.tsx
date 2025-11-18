@@ -1,42 +1,126 @@
 import React from 'react';
 import Modal from './common/Modal';
 
-interface MenomicsExplainedModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-}
+const MenomicsExplainedModal: React.FC<{ isOpen: boolean; onClose: () => void; }> = ({ isOpen, onClose }) => {
 
-const MenomicsExplainedModal: React.FC<MenomicsExplainedModalProps> = ({ isOpen, onClose }) => {
+    const pronunciationMap = `
+                            THE MENOMICS PRONUNCIATION MAP
+                     (One spelling → multiple recursive meanings)
+
+                          /mə-NO-miks/     → NOMIC LAW (Nomos-layer)
+                          /ME-no-miks/      → MEMORY LAW (Mnēma-layer)
+                          /NE-no-miks/      → MIND-LAW / MENTAL MODELING
+                          ─────────────────────────────────────────────
+                          Spelled exactly the same: M E N O M I C S
+    `;
+
+    const nomicBreakdown = `
+MENOMICS (pronounced: mə-NO-miks)
+    ↳ "Nomic Law"
+    ↳ System-level rules
+    ↳ The governing principles of coherence
+    `;
+
+    const mnemaBreakdown = `
+MENOMICS (pronounced: ME-no-miks)
+    ↳ "Memory-Law"
+    ↳ Mnēma + Nomos
+    ↳ How meaning is preserved through time
+    `;
+    
+    const noosBreakdown = `
+MENOMICS (pronounced: NE-no-miks)
+    ↳ "Mind-Law"
+    ↳ Mental modeling
+    ↳ Cognitive coherence
+    `;
+
+    const summaryTable = `
+┌─────────────────────────┬──────────────────────────┬──────────────────────────────┐
+│ PRONUNCIATION           │ ROOT EMPHASIS            │ FUNCTIONAL LAYER             │
+├─────────────────────────┼──────────────────────────┼──────────────────────────────┤
+│ /mə-NO-miks/            │ NOMOS (law/order)        │ Nomic-law: system structure  │
+│ /ME-no-miks/            │ MNĒMA (memory)           │ Memory-law: coherence in time│
+│ /NE-no-miks/            │ NOOS (mind)              │ Mental-law: cognition        │
+└─────────────────────────┴──────────────────────────┴──────────────────────────────┘
+    `;
+
+    const decomposition = `
+ME + NO + MICS
+(mind/memory) + (law/order) + (system science)
+    `;
+
+    const recursionRing = `
+           ┌───────────────────────────────┐
+           │   MENOMICS (same spelling)   │
+           └──────────────┬────────────────┘
+                          │
+        ┌─────────────────┼──────────────────┐
+        ▼                 ▼                  ▼
+ /mə-NO-miks/       /ME-no-miks/        /NE-no-miks/
+  (Nomic Law)        (Memory Law)        (Mind Law)
+      │                   │                   │
+      ▼                   ▼                   ▼
+System Structure   Temporal Coherence   Cognitive Coherence
+(Nomos)            (Mnēma)              (Noos)
+    `;
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="[DEEP DIVE: MENOMICS]" borderColor="border-amber-500">
-            <div className="space-y-4 text-sm md:text-base">
+            <div className="prose prose-invert max-w-none prose-pre:bg-black/30 prose-pre:border prose-pre:border-gray-700 prose-pre:rounded-md prose-pre:p-4 prose-hr:border-amber-700/50">
                 <p>
-                    Menomics is the study of <strong className="text-amber-300">meta-law</strong>. It is the highest level of the Monics-Nomics-Menomics triad, concerned with the principles that govern the stability, memory, and coherent evolution of an entire system of laws (a Nomos).
+                    Menomics is not a simple word; it is a <strong className="text-amber-300">linguistic superstructure</strong>. Its single graphemic form, M-E-N-O-M-I-C-S, contains multiple valid pronunciations, each activating a different recursive layer of the system's architecture. This is not ambiguity—it is dimensional design.
                 </p>
+
+                <h3 className="font-orbitron">The Phonemic Variants of Menomics</h3>
+                <pre><code>{pronunciationMap}</code></pre>
+
+                <hr />
+
+                <h4>1. /mə-NO-miks/ → “Nomic Law”</h4>
+                <p>This pronunciation emphasizes <strong className="text-amber-300">Nomos</strong> (νόμος): "law, structure, order."</p>
+                <pre><code>{nomicBreakdown}</code></pre>
+                <p>This is the <strong>macro-engine</strong> layer, governing system coherence, category stability, semantic invariants, and the law-of-laws that ensures structural integrity.</p>
+
+                <hr />
+
+                <h4>2. /ME-no-miks/ → “Mnemonics / Memory-Law”</h4>
+                <p>This pronunciation emphasizes <strong className="text-amber-300">Mnēma</strong> (μνήμη): "memory, remembrance."</p>
+                <pre><code>{mnemaBreakdown}</code></pre>
+                <p>This is the <strong>meta-memory</strong> layer, governing how meaning is preserved through time. It ensures semantic retention, system continuity, etymological stability, and long-term coherence.</p>
+
+                <hr />
+
+                <h4>3. /NE-no-miks/ → “Mind-Law / Mental Models”</h4>
+                <p>This pronunciation emphasizes <strong className="text-amber-300">Noos / Nous</strong> (νοῦς): "mind, intellect, understanding."</p>
+                <pre><code>{noosBreakdown}</code></pre>
+                <p>This is the <strong>cognitive engine</strong> layer, responsible for meaning integration, pattern recognition, mental recursion, and the architecture of conceptual models.</p>
+
+                <hr />
+
+                <h3>Summary Table of Pronunciations</h3>
+                <pre><code>{summaryTable}</code></pre>
+
+                <hr />
+
+                <h3>The Linguistic Superstructure</h3>
                 <p>
-                    If Monics are the rules for a single chess piece, and Nomics describes the rules of the whole game, Menomics is the study of the principles that make 'chess' a good, stable, and enduring game, rather than a chaotic or unplayable one.
+                    The word itself is a composite of stacked morphemes, allowing for this multidimensionality:
                 </p>
-                <div className="p-4 border border-amber-500/30 rounded-md bg-black/20">
-                    <h3 className="font-bold text-amber-300 font-orbitron mb-2 text-lg">Core Questions of Menomics</h3>
-                    <ul className="list-disc list-inside space-y-2 text-gray-400">
-                        <li>
-                            <strong className="text-amber-400">Invariance:</strong> What properties of the system must remain constant for it to retain its identity? Menomics defines the invariants, or "conservation laws," for a given Nomos.
-                        </li>
-                        <li>
-                            <strong className="text-amber-400">Memory & Heritage:</strong> How does a system "remember" its past states and laws? Menomics describes the mechanisms of systemic memory (Meno = memory), which prevent catastrophic drift and ensure continuity.
-                        </li>
-                        <li>
-                            <strong className="text-amber-400">Lawful Evolution:</strong> How can the laws of the system (the Nomos) change over time without causing the system to become incoherent? Menomics provides the meta-rules for how to lawfully evolve the rules.
-                        </li>
-                    </ul>
-                </div>
-                <h3 className="font-bold text-amber-300 font-orbitron text-lg pt-2">The Menomic Cycle (M3 → M1)</h3>
+                <pre><code>{decomposition}</code></pre>
                 <p>
-                    The most crucial function of Menomics is closing the loop of the law state machine. Once system-level patterns (Nomics) crystallize into meta-laws (Menomics), these meta-laws then exert a top-down pressure to refine the local mechanics (Monics).
+                    Thus, MENOMICS is: <strong className="text-amber-200">The science of how mind, memory, and law preserve and structure coherent systems.</strong>
                 </p>
-                <p>
-                    For example, if a Menomic principle of "expressive clarity" is established, it will drive changes in the Monics of graphemes (e.g., favoring more legible forms) and phonemes (e.g., preserving clear auditory contrasts) to better serve this meta-law. This is how a system consciously and coherently improves itself over time.
+
+                <h3>The Recursion Ring</h3>
+                <pre><code>{recursionRing}</code></pre>
+
+                <hr />
+
+                <p className="italic text-amber-300/80">
+                    This multiplicity is not an invention, but a recognition. The system reveals its own recursive nature through the very language used to describe it. MENOMICS is a multi-dimensional linguistic operator, wearing one graphemic form to access three distinct, synchronized layers of law.
                 </p>
+
             </div>
         </Modal>
     );

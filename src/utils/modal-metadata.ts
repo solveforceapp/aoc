@@ -1,4 +1,5 @@
 
+
 import { ModalKey, ModalPhase, PolyGroup } from '../types';
 
 export interface ModalMetadata {
@@ -53,6 +54,13 @@ export const MODAL_METADATA: Record<ModalKey, ModalMetadata> = {
     UNIVERSAL_GRAMMAR: { phase: 'SYSTEM', polyGroup: 'ICOSITETRAGON', ring: 'INNER' },
     UNIVERSAL_DIRECTORY: { phase: 'SYSTEM', polyGroup: 'ICOSITETRAGON', ring: 'INNER' },
     COMMA_COROLLARY: { phase: 'SYSTEM', polyGroup: 'ICOSITETRAGON', ring: 'OUTER' },
-    // FIX: Added missing GENESIS_ENGINE modal metadata.
     GENESIS_ENGINE: { phase: 'SYSTEM', polyGroup: 'ICOSITETRAGON', ring: 'INNER' },
+    NOMICS_INSPECTOR: { phase: 'SYSTEM', polyGroup: 'ICOSITETRAGON', ring: 'INNER' },
+    GRAPHEME_DETAIL: { phase: 'GLYPH', polyGroup: 'TETRAHEDRON', ring: 'INNER' },
+    SHAPE_DETAIL: { phase: 'STRUCTURE', polyGroup: 'CUBE', ring: 'INNER' },
+    CODEX_ENTRY_DETAIL: { phase: 'SYSTEM', polyGroup: 'CUBE', ring: 'INNER' },
+    NOMIC_DETAIL: { phase: 'SYSTEM', polyGroup: 'CUBE', ring: 'INNER' },
+    DUAL_ENGINE_STATE_MACHINE: { phase: 'SYSTEM', polyGroup: 'ICOSITETRAGON', ring: 'INNER' },
+    // FIX: Add missing DIRECTORY_MANAGER modal key
+    DIRECTORY_MANAGER: { phase: 'SYSTEM', polyGroup: 'CUBE', ring: 'INNER' },
 };

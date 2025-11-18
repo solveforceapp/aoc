@@ -47,8 +47,8 @@ Polygonomics (*polygon + nomos*) governs the static geometry of the field. It di
 ### Spinomics — The Economy of Rotation
 Spinomics (*spin + nomos*) governs the temporal and cyclical dynamics of the field. It defines concepts of forward, retrograde, and cyclical motion, dictating how patterns and sequences traverse the geometric structures laid out by Polygonomics. The sequencer's playback modes (normal, loop, reverse) are a direct expression of Spinomic law.
 
-### Vectornomics — The Economy of Flow
-Vectornomics (*vector + nomos*) governs the moment-to-moment motion within the field. It is the physics engine, defining the properties of the vector field—direction, magnitude, curl, noise, and flow profiles (e.g., Grid, Orbit, Turbulent). It translates the abstract concepts of the active modal into tangible, visible motion, bringing the field to life.
+### Vectonomics — The Economy of Flow
+Vectonomics (*vector + nomos*) governs the moment-to-moment motion within the field. It is the physics engine, defining the properties of the vector field—direction, magnitude, curl, noise, and flow profiles (e.g., Grid, Orbit, Turbulent). It translates the abstract concepts of the active modal into tangible, visible motion, bringing the field to life.
 
 ## Canonical Etudes
 

@@ -46,7 +46,7 @@
  *      - phase sequencing (temporal deviation),
  *      - all ORBIT and RETRO flows.
  *
- *  • It bridges between Polygonomics (shape) and Vectornomics (flow).
+ *  • It bridges between Polygonomics (shape) and Vectonomics (flow).
  *
  *  Signed in the Ledger of Time – Logos Sequencer Constitution v3.0
  */
@@ -54,10 +54,10 @@
 /**
  * ──────────────────────────────────────────────────────────────────────────────
  *  GEOMETRIC CONSTITUTION – VOLUME III
- *  Vectornomics: The Law of Flow
+ *  Vectonomics: The Law of Flow
  * ──────────────────────────────────────────────────────────────────────────────
  *
- *  Vectornomics is the economics of motion: the constitutional law
+ *  Vectonomics is the economics of motion: the constitutional law
  *  that dictates how direction, magnitude, curl, divergence, noise,
  *  and radial bias are budgeted and deployed within the field.
  *
@@ -87,7 +87,7 @@
  *
  *  APPLICATION:
  *
- *  • Vectornomics governs:
+ *  • Vectonomics governs:
  *      - vector field rendering via computeFieldVelocity,
  *      - baseFlow behaviors (GRID, RADIAL, SPIRAL, ORBIT, SHELL, TURBULENT),
  *      - entropy sampling and radial drift,
@@ -95,7 +95,7 @@
  *      - motion semantics within the Sequencer.
  *
  *  • It completes the triad:
- *      Polygonomics → Spinomics → Vectornomics.
+ *      Polygonomics → Spinomics → Vectonomics.
  *
  *  Signed in the Ledger of Motion – Logos Sequencer Constitution v3.0
  */
@@ -107,7 +107,7 @@
  *
  *  Synthenomics governs the *coherence* of geometry, rotation, and flow.
  *  It ensures that Polygonomics (shape), Spinomics (spin), and
- *  Vectornomics (flow) remain mutually reinforcing rather than divergent.
+ *  Vectonomics (flow) remain mutually reinforcing rather than divergent.
  *
  *  PRINCIPLES:
  *
